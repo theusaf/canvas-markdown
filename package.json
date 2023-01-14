@@ -1,0 +1,32 @@
+{
+  "name": "canvas-markdown",
+  "version": "1.0.0",
+  "description": "A userscript that allows markdown input on Canvas",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theusaf/canvas-markdown.git"
+  },
+  "keywords": [
+    "userscript",
+    "canvas",
+    "markdown"
+  ],
+  "author": "theusaf",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/theusaf/canvas-markdown/issues"
+  },
+  "homepage": "https://github.com/theusaf/canvas-markdown#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.48.1",
+    "@typescript-eslint/parser": "^5.48.1",
+    "eslint": "^8.31.0",
+    "prettier": "^2.8.3",
+    "typescript": "^4.9.4"
+  }
+}

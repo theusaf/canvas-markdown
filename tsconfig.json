@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "types": [],
+    "newLine": "lf",
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+    "moduleResolution": "Node",
+    "removeComments": false
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
