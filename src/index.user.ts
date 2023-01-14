@@ -9,6 +9,9 @@
 // @grant        none
 // ==/UserScript==
 
+import "https://raw.githubusercontent.com/theusaf/canvas-markdown/main/lib/codemirror/codemirror.js";
+import "https://raw.githubusercontent.com/theusaf/canvas-markdown/main/lib/codemirror/mode/markdown/markdown.js";
+
 function getEditorElements() {
   return [
     ...document.querySelectorAll<HTMLDivElement>(".ic-RichContentEditor"),
@@ -31,4 +34,18 @@ function getSwitchTypeButton(editor: HTMLDivElement) {
 
 function isEditorInPlainMode(editor: HTMLDivElement) {
   return /pretty html/i.test(getSwitchTypeButton(editor).title);
+}
+
+function injectMarkdownEditor(editor: HTMLDivElement) {
+  const editorContent = document.createElement("template");
+  editorContent.innerHTML = `
+  <link rel="stylesheet" href="https://raw.githubusercontent.com/theusaf/canvas-markdown/main/lib/codemirror/codemirror.css">
+  `;
+  editor.querySelector(".rce-wrapper").append(
+    editorContent.content.cloneNode(true)
+  )
+}
+
+function getTextArea(editor: HTMLDivElement) {
+  return editor.querySelector<HTMLTextAreaElement>("textarea[data-rich_text=true]");
 }
