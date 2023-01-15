@@ -33,66 +33,80 @@ if (
       document.head.append(css);
     }
 
-    function getEditorElements() {
-      return [
-        ...document.querySelectorAll<HTMLDivElement>(".ic-RichContentEditor"),
-      ];
-    }
-
-    class MarkdownEditor {
-      editorContainer: HTMLDivElement;
-      canvasTextArea: HTMLTextAreaElement;
-
-      constructor(editor: HTMLDivElement) {
-        this.editorContainer = editor;
-        this.canvasTextArea = this.getTextArea();
-      }
-
-      getTextArea() {
-        return this.editorContainer.querySelector<HTMLTextAreaElement>(
-          "textarea[data-rich_text=true]"
-        );
-      }
-
-      getSwitchEditorButton() {
-        return this.editorContainer.querySelector<HTMLButtonElement>(
-          "[data-btn-id=rce-edit-btn]"
-        );
-      }
-
-      isInTextMode() {
-        return /rich text/i.test(this.getSwitchEditorButton().title);
-      }
-
-      getSwitchTypeButton() {
-        return this.editorContainer.querySelector<HTMLButtonElement>(
-          "[data-btn-id=rce-editormessage-btn]"
-        );
-      }
-
-      isInPlainMode() {
-        return /pretty html/i.test(this.getSwitchTypeButton().title);
-      }
-
-      injectMarkdownEditor() {
-        const editorContent = document.createElement("template");
-        // Note: The heights should follow the same values as the canvas editor.
-        // These values can also be changed by the user.
-        editorContent.innerHTML = `
-          <div id="markdown-editor-container">
-            <textarea id="markdown-editor" style="height: 400px; resize: none;"></textarea>
-            <div id="markdown-fancy-editor" style="height: 400px;">
-            </div>
-          </div>
-        `;
-        this.editorContainer
-          .querySelector(".rce-wrapper")
-          .append(editorContent.content.cloneNode(true));
-      }
-    }
-
     console.log("[Canvas Markdown] Done.");
   })();
 } else {
   console.log("[Canvas Markdown] Not a Canvas page, skipping...");
+}
+
+function getEditorElements() {
+  return [
+    ...document.querySelectorAll<HTMLDivElement>(".ic-RichContentEditor"),
+  ];
+}
+
+class MarkdownEditor {
+  editorContainer: HTMLDivElement;
+  canvasTextArea: HTMLTextAreaElement;
+  markdownContainer: HTMLDivElement;
+  markdownTextArea: HTMLTextAreaElement;
+  markdownEditor: CodeMirror.Editor;
+
+  constructor(editor: HTMLDivElement) {
+    this.editorContainer = editor;
+    this.canvasTextArea = this.getTextArea();
+  }
+
+  getTextArea() {
+    return this.editorContainer.querySelector<HTMLTextAreaElement>(
+      "textarea[data-rich_text=true]"
+    );
+  }
+
+  getSwitchEditorButton() {
+    return this.editorContainer.querySelector<HTMLButtonElement>(
+      "[data-btn-id=rce-edit-btn]"
+    );
+  }
+
+  isInTextMode() {
+    return /rich text/i.test(this.getSwitchEditorButton().title);
+  }
+
+  getSwitchTypeButton() {
+    return this.editorContainer.querySelector<HTMLButtonElement>(
+      "[data-btn-id=rce-editormessage-btn]"
+    );
+  }
+
+  isInPlainMode() {
+    return /pretty html/i.test(this.getSwitchTypeButton().title);
+  }
+
+  injectMarkdownEditor() {
+    const editorContent = document.createElement("template");
+    // Note: The heights should follow the same values as the canvas editor.
+    // These values can also be changed by the user.
+    editorContent.innerHTML = `
+      <div md-id="markdown-editor-container">
+        <textarea md-id="markdown-editor" style="height: 400px; resize: none;"></textarea>
+      </div>
+    `;
+    this.editorContainer
+      .querySelector(".rce-wrapper")
+      .append(editorContent.content.cloneNode(true));
+    this.markdownContainer = this.editorContainer.querySelector(
+      "[md-id=markdown-editor-container]"
+    );
+    this.markdownTextArea = this.editorContainer.querySelector(
+      "[md-id=markdown-editor]"
+    );
+    this.markdownEditor = CodeMirror.fromTextArea(this.markdownTextArea, {
+      mode: "markdown",
+      lineNumbers: true,
+    });
+    const codeMirrorEditor = this.markdownEditor.getWrapperElement();
+    codeMirrorEditor.style.height = "400px";
+    codeMirrorEditor.setAttribute("md-id", "markdown-editor-codemirror");
+  }
 }
