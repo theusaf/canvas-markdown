@@ -12,40 +12,61 @@
 import "https://raw.githubusercontent.com/theusaf/canvas-markdown/main/lib/codemirror/codemirror.js";
 import "https://raw.githubusercontent.com/theusaf/canvas-markdown/main/lib/codemirror/mode/markdown/markdown.js";
 
+{
+  const css = document.createElement("link");
+  css.rel = "stylesheet";
+  css.href = "https://raw.githubusercontent.com/theusaf/canvas-markdown/main/lib/codemirror/codemirror.css";
+  document.head.append(css);
+}
+
 function getEditorElements() {
   return [
     ...document.querySelectorAll<HTMLDivElement>(".ic-RichContentEditor"),
   ];
 }
 
-function getSwitchEditorButton(editor: HTMLDivElement) {
-  return editor.querySelector<HTMLButtonElement>("[data-btn-id=rce-edit-btn]");
-}
+class MarkdownEditor {
+  editorContainer: HTMLDivElement;
+  canvasTextArea: HTMLTextAreaElement;
 
-function isEditorInTextMode(editor: HTMLDivElement) {
-  return /rich text/i.test(getSwitchEditorButton(editor).title);
-}
+  constructor(editor: HTMLDivElement) {
+    this.editorContainer = editor;
+    this.canvasTextArea = this.getTextArea();
+  }
 
-function getSwitchTypeButton(editor: HTMLDivElement) {
-  return editor.querySelector<HTMLButtonElement>(
-    "[data-btn-id=rce-editormessage-btn]"
-  );
-}
+  getTextArea() {
+    return this.editorContainer.querySelector<HTMLTextAreaElement>(
+      "textarea[data-rich_text=true]"
+    );
+  }
 
-function isEditorInPlainMode(editor: HTMLDivElement) {
-  return /pretty html/i.test(getSwitchTypeButton(editor).title);
-}
+  getSwitchEditorButton() {
+    return this.editorContainer.querySelector<HTMLButtonElement>(
+      "[data-btn-id=rce-edit-btn]"
+    );
+  }
 
-function injectMarkdownEditor(editor: HTMLDivElement) {
-  const editorContent = document.createElement("template");
-  editorContent.innerHTML = `
-  <link rel="stylesheet" href="https://raw.githubusercontent.com/theusaf/canvas-markdown/main/lib/codemirror/codemirror.css">
-  `;
-  editor.querySelector(".rce-wrapper").append(
-    editorContent.content.cloneNode(true)
-  )
-}
+  isInTextMode() {
+    return /rich text/i.test(this.getSwitchEditorButton().title);
+  }
 
-function getTextArea(editor: HTMLDivElement) {
-  return editor.querySelector<HTMLTextAreaElement>("textarea[data-rich_text=true]");
+  getSwitchTypeButton() {
+    return this.editorContainer.querySelector<HTMLButtonElement>(
+      "[data-btn-id=rce-editormessage-btn]"
+    );
+  }
+
+  isInPlainMode() {
+    return /pretty html/i.test(this.getSwitchTypeButton().title);
+  }
+
+  injectMarkdownEditor() {
+    const editorContent = document.createElement("template");
+    editorContent.innerHTML = `
+
+    `;
+    this.editorContainer
+      .querySelector(".rce-wrapper")
+      .append(editorContent.content.cloneNode(true));
+  }
 }
