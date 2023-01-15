@@ -10,8 +10,9 @@
 
 if (
   new URL(
-    document.querySelector<HTMLAnchorElement>("#global_nav_help_link").href
-  ).hostname === "help.instructure.com"
+    document.querySelector<HTMLAnchorElement>("#global_nav_help_link")?.href ??
+      ""
+  )?.hostname === "help.instructure.com"
 ) {
   console.log("[Canvas Markdown] Detected Canvas page, loading...");
   (async () => {
