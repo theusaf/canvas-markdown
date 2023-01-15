@@ -55,6 +55,8 @@ class MarkdownEditor {
   constructor(editor: HTMLDivElement) {
     this.editorContainer = editor;
     this.canvasTextArea = this.getTextArea();
+
+    this.editorContainer.setAttribute("md-id", "canvas-container");
   }
 
   getTextArea() {
