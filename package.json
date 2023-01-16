@@ -24,6 +24,7 @@
   "homepage": "https://github.com/theusaf/canvas-markdown#readme",
   "devDependencies": {
     "@types/codemirror": "^5.60.6",
+    "@types/highlightjs": "^9.12.2",
     "@typescript-eslint/eslint-plugin": "^5.48.1",
     "@typescript-eslint/parser": "^5.48.1",
     "eslint": "^8.31.0",
