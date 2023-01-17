@@ -315,6 +315,11 @@ CANVAS-MARKDOWN-CODE-->`;
         ];
         for (const element of hljsElements) {
             element.style.color = getComputedStyle(element).color;
+            if (element.tagName === "CODE") {
+                element.parentElement.style.backgroundColor =
+                    getComputedStyle(element).backgroundColor;
+                element.style.textShadow = "none";
+            }
         }
         const output = tempDiv.innerHTML;
         tempDiv.remove();
