@@ -8,36 +8,39 @@
 // @grant        none
 // ==/UserScript==
 
-if (
-  new URL(
-    document.querySelector<HTMLAnchorElement>("#global_nav_help_link")?.href ??
-      ""
-  )?.hostname === "help.instructure.com"
-) {
-  console.log("[Canvas Markdown] Detected Canvas page, loading...");
-  (async () => {
-    console.log("[Canvas Markdown] Importing dependencies...");
-    await import(
-      "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/codemirror.js" as any
-    );
-    await import(
-      "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/mode/markdown/markdown.js" as any
-    );
-    const s = document.createElement("script");
-    s.src = "https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js";
-    document.head.append(s);
-    const css = document.createElement("link");
-    css.rel = "stylesheet";
-    css.href =
-      "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/codemirror.css";
-    document.head.append(css);
-    console.log("[Canvas Markdown] Setting up...");
-    setupWatcher();
-    console.log("[Canvas Markdown] Done.");
-  })();
-} else {
-  console.log("[Canvas Markdown] Not a Canvas page, skipping...");
-}
+try {
+  if (
+    new URL(
+      document.querySelector<HTMLAnchorElement>("#global_nav_help_link")
+        ?.href ?? ""
+    )?.hostname === "help.instructure.com"
+  ) {
+    console.log("[Canvas Markdown] Detected Canvas page, loading...");
+    (async () => {
+      console.log("[Canvas Markdown] Importing dependencies...");
+      await import(
+        "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/codemirror.js" as any
+      );
+      await import(
+        "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/mode/markdown/markdown.js" as any
+      );
+      const s = document.createElement("script");
+      s.src =
+        "https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js";
+      document.head.append(s);
+      const css = document.createElement("link");
+      css.rel = "stylesheet";
+      css.href =
+        "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/codemirror.css";
+      document.head.append(css);
+      console.log("[Canvas Markdown] Setting up...");
+      setupWatcher();
+      console.log("[Canvas Markdown] Done.");
+    })();
+  } else {
+    console.log("[Canvas Markdown] Not a Canvas page, skipping...");
+  }
+} catch (e) {}
 
 function getEditorElements() {
   return [
