@@ -199,11 +199,38 @@ class MarkdownEditor {
     const switchButton = this.getSwitchEditorButton();
     switchButton.onclick = () => {
       if (this.active) {
-        this.active = false;
-        this.markdownTextContainer.style.display = "none";
-        this.markdownPrettyContainer.style.display = "none";
+        this.deactivate();
       }
     };
+    this.markdownSwitchButton.addEventListener("click", () => {
+      if (this.active) {
+        this.deactivate();
+        switchButton.click();
+      } else {
+        this.activate();
+      }
+    });
+  }
+
+  activate() {
+    this.active = true;
+    this.markdownTextContainer.style.display = "none";
+    this.markdownPrettyContainer.style.display = "block";
+    const markdownCode = this.extractMarkdown(this.canvasTextArea.value);
+    this.markdownTextArea.value = markdownCode;
+    this.markdownEditor.setValue(markdownCode);
+    if (!this.isInPlainMode()) {
+      this.getSwitchEditorButton().click();
+    }
+    if (!this.isInTextMode()) {
+      this.getSwitchTypeButton().click();
+    }
+  }
+
+  deactivate() {
+    this.active = false;
+    this.markdownTextContainer.style.display = "none";
+    this.markdownPrettyContainer.style.display = "none";
   }
 
   async updateCanvasData() {
