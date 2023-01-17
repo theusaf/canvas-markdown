@@ -88,6 +88,7 @@ class MarkdownEditor {
   markdownEditor: CodeMirror.Editor;
   markdownSwitchButton: HTMLButtonElement;
   showdownConverter: showdown.Converter;
+  active = false;
 
   constructor(editor: HTMLDivElement) {
     this.editorContainer = editor;
@@ -189,7 +190,39 @@ class MarkdownEditor {
     this.markdownPrettyContainer.style.display = "none";
   }
 
-  applyEventListeners() {}
+  applyEventListeners() {
+    this.markdownTextArea.addEventListener("input", this.updateCanvasData);
+    this.markdownEditor.on("change", () => {
+      this.markdownTextArea.value = this.markdownEditor.getValue();
+      this.updateCanvasData();
+    });
+    const switchButton = this.getSwitchEditorButton();
+    switchButton.onclick = () => {
+      if (this.active) {
+        this.active = false;
+        this.markdownTextContainer.style.display = "none";
+        this.markdownPrettyContainer.style.display = "none";
+      }
+    };
+  }
+
+  async updateCanvasData() {
+    const markdownCode = this.markdownTextArea.value,
+      output = await this.generateOutput(markdownCode);
+    this.canvasTextArea.value = output;
+    this.activateCanvasCallbacks();
+  }
+
+  activateCanvasCallbacks() {
+    const customEvent = new CustomEvent("input") as any;
+    customEvent.keyCode = 13;
+    customEvent.which = 13;
+    customEvent.location = 0;
+    customEvent.code = "Enter";
+    customEvent.key = "Enter";
+    customEvent.target = this.canvasTextArea;
+    this.canvasTextArea.dispatchEvent(customEvent);
+  }
 
   injectMarkdownUI() {
     const button = document.createElement("button"),
@@ -278,9 +311,11 @@ CANVAS-MARKDOWN-CODE-->`;
         const languageData = (
           await import(
             `https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/highlight/es/languages/${languages[language]}.min.js`
-          )
+          ).catch(() => {})
         ).default;
-        highlight.registerLanguage(language, languageData);
+        if (languageData) {
+          highlight.registerLanguage(language, languageData);
+        }
       }
     }
   }
