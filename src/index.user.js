@@ -58,6 +58,11 @@ function setupWatcher() {
         }
     }, 1e3);
 }
+var MarkdownEditorMode;
+(function (MarkdownEditorMode) {
+    MarkdownEditorMode[MarkdownEditorMode["RAW"] = 0] = "RAW";
+    MarkdownEditorMode[MarkdownEditorMode["PRETTY"] = 1] = "PRETTY";
+})(MarkdownEditorMode || (MarkdownEditorMode = {}));
 class MarkdownEditor {
     editorContainer;
     canvasTextArea;
@@ -66,8 +71,10 @@ class MarkdownEditor {
     markdownTextArea;
     markdownEditor;
     markdownSwitchButton;
+    markdownSwitchTypeButton;
     showdownConverter;
     active = false;
+    mode = MarkdownEditorMode.PRETTY;
     constructor(editor) {
         this.editorContainer = editor;
         this.canvasTextArea = this.getCanvasTextArea();
@@ -97,7 +104,7 @@ class MarkdownEditor {
     getCanvasSwitchTypeButton() {
         return this.editorContainer.querySelector("[data-btn-id=rce-editormessage-btn]");
     }
-    isCanvasInPlainMode() {
+    isCanvasInPlainTextMode() {
         return /pretty html/i.test(this.getCanvasSwitchTypeButton().title);
     }
     insertAfter(newNode, referenceNode) {
@@ -170,17 +177,27 @@ class MarkdownEditor {
         const markdownCode = this.extractMarkdown(this.canvasTextArea.value);
         this.markdownTextArea.value = markdownCode;
         this.markdownEditor.setValue(markdownCode);
-        if (!this.isCanvasInPlainMode()) {
+        if (!this.isCanvasInTextMode()) {
             this.getCanvasSwitchEditorButton().click();
         }
-        if (!this.isCanvasInTextMode()) {
-            this.getCanvasSwitchTypeButton().click();
-        }
+        setTimeout(() => {
+            this.injectMarkdownSwitchTypeButton();
+            if (this.markdownSwitchTypeButton)
+                this.markdownSwitchTypeButton.style.display = "block";
+            this.getCanvasSwitchTypeButton().style.display = "none";
+            if (!this.isCanvasInPlainTextMode()) {
+                this.getCanvasSwitchTypeButton().click();
+            }
+        });
     }
     deactivate() {
         this.active = false;
         this.markdownTextContainer.style.display = "none";
         this.markdownPrettyContainer.style.display = "none";
+        if (this.markdownSwitchTypeButton)
+            this.markdownSwitchTypeButton.style.display = "none";
+        if (this.getCanvasSwitchTypeButton())
+            this.getCanvasSwitchTypeButton().style.display = "block";
     }
     async updateCanvasData() {
         const markdownCode = this.markdownTextArea.value, output = await this.generateOutput(markdownCode);
@@ -217,6 +234,41 @@ class MarkdownEditor {
         button.append(buttonContent.content.cloneNode(true));
         this.markdownSwitchButton = button;
         this.insertAfter(button, switchButton);
+    }
+    injectMarkdownSwitchTypeButton() {
+        if (this.markdownSwitchTypeButton?.isConnected)
+            return;
+        const button = document.createElement("button"), switchButton = this.getCanvasSwitchTypeButton();
+        button.setAttribute("type", "button");
+        button.className = switchButton.className;
+        button.setAttribute("style", switchButton.style.cssText);
+        const buttonContent = document.createElement("template");
+        buttonContent.innerHTML = `
+    <span class="${switchButton.firstElementChild.className}">
+      <span class="${switchButton.firstElementChild.firstElementChild.className}" md-id="md-switch-type-button">Switch to raw Markdown editor</span>
+    </span>
+    `;
+        button.append(buttonContent.content.cloneNode(true));
+        this.markdownSwitchTypeButton = button;
+        this.insertAfter(button, switchButton);
+        this.markdownSwitchTypeButton.addEventListener("click", () => {
+            if (!this.active)
+                return;
+            if (this.mode === MarkdownEditorMode.PRETTY) {
+                this.mode = MarkdownEditorMode.RAW;
+                this.markdownPrettyContainer.style.display = "none";
+                this.markdownTextContainer.style.display = "block";
+                this.markdownSwitchTypeButton.textContent =
+                    "Switch to Pretty Markdown editor";
+            }
+            else {
+                this.mode = MarkdownEditorMode.PRETTY;
+                this.markdownPrettyContainer.style.display = "block";
+                this.markdownTextContainer.style.display = "none";
+                this.markdownSwitchTypeButton.textContent =
+                    "Switch to Raw Markdown editor";
+            }
+        });
     }
     /**
      * Extracts the markdown code from the html comment.
