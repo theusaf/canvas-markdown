@@ -92,7 +92,7 @@ class MarkdownEditor {
 
   constructor(editor: HTMLDivElement) {
     this.editorContainer = editor;
-    this.canvasTextArea = this.getTextArea();
+    this.canvasTextArea = this.getCanvasTextArea();
   }
 
   setup() {
@@ -110,30 +110,30 @@ class MarkdownEditor {
     });
   }
 
-  getTextArea() {
+  getCanvasTextArea() {
     return this.editorContainer.querySelector<HTMLTextAreaElement>(
       "textarea[data-rich_text=true]"
     );
   }
 
-  getSwitchEditorButton() {
+  getCanvasSwitchEditorButton() {
     return this.editorContainer.querySelector<HTMLButtonElement>(
       "[data-btn-id=rce-edit-btn]"
     );
   }
 
-  isInTextMode() {
-    return /rich text/i.test(this.getSwitchEditorButton().title);
+  isCanvasInTextMode() {
+    return /rich text/i.test(this.getCanvasSwitchEditorButton().title);
   }
 
-  getSwitchTypeButton() {
+  getCanvasSwitchTypeButton() {
     return this.editorContainer.querySelector<HTMLButtonElement>(
       "[data-btn-id=rce-editormessage-btn]"
     );
   }
 
-  isInPlainMode() {
-    return /pretty html/i.test(this.getSwitchTypeButton().title);
+  isCanvasInPlainMode() {
+    return /pretty html/i.test(this.getCanvasSwitchTypeButton().title);
   }
 
   insertAfter(newNode: Node, referenceNode: Node) {
@@ -196,7 +196,7 @@ class MarkdownEditor {
       this.markdownTextArea.value = this.markdownEditor.getValue();
       this.updateCanvasData();
     });
-    const switchButton = this.getSwitchEditorButton();
+    const switchButton = this.getCanvasSwitchEditorButton();
     switchButton.onclick = () => {
       if (this.active) {
         this.deactivate();
@@ -219,11 +219,11 @@ class MarkdownEditor {
     const markdownCode = this.extractMarkdown(this.canvasTextArea.value);
     this.markdownTextArea.value = markdownCode;
     this.markdownEditor.setValue(markdownCode);
-    if (!this.isInPlainMode()) {
-      this.getSwitchEditorButton().click();
+    if (!this.isCanvasInPlainMode()) {
+      this.getCanvasSwitchEditorButton().click();
     }
-    if (!this.isInTextMode()) {
-      this.getSwitchTypeButton().click();
+    if (!this.isCanvasInTextMode()) {
+      this.getCanvasSwitchTypeButton().click();
     }
   }
 
@@ -253,7 +253,7 @@ class MarkdownEditor {
 
   injectMarkdownUI() {
     const button = document.createElement("button"),
-      switchButton = this.getSwitchEditorButton();
+      switchButton = this.getCanvasSwitchEditorButton();
     button.setAttribute("type", "button");
     button.className = switchButton.className;
     button.setAttribute("style", switchButton.style.cssText);
