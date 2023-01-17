@@ -69,6 +69,7 @@ class MarkdownEditor {
   markdownPrettyContainer: HTMLDivElement;
   markdownTextArea: HTMLTextAreaElement;
   markdownEditor: CodeMirror.Editor;
+  markdownSwitchButton: HTMLButtonElement;
   showdownConverter: showdown.Converter;
 
   constructor(editor: HTMLDivElement) {
@@ -80,6 +81,7 @@ class MarkdownEditor {
     this.editorContainer.setAttribute("md-id", "canvas-container");
     this.injectMarkdownEditor();
     this.setupShowdown();
+    this.injectMarkdownUI();
   }
 
   setupShowdown() {
@@ -164,8 +166,43 @@ class MarkdownEditor {
     const codeMirrorEditor = this.markdownEditor.getWrapperElement();
     codeMirrorEditor.style.height = "400px";
     codeMirrorEditor.setAttribute("md-id", "markdown-editor-codemirror");
-    // Hide the markdown editor. This also allows CodeMirror to properly render when the editor is shown.
+    // Hide the markdown editor. By doing it here, it also allows CodeMirror to
+    // properly render when the editor is shown.
     this.markdownPrettyContainer.style.display = "none";
+    this.applyEventListeners();
+  }
+
+  applyEventListeners() {}
+
+  injectMarkdownUI() {
+    const button = document.createElement("button"),
+      switchButton = this.getSwitchEditorButton();
+    button.setAttribute("type", "button");
+    button.className = switchButton.className;
+    button.setAttribute("style", switchButton.style.cssText);
+
+    const buttonContent = document.createElement("template");
+    buttonContent.innerHTML = `
+    <span class="${switchButton.firstElementChild.className}">
+      <span class="${
+        switchButton.firstElementChild.firstElementChild.className
+      }" style="${
+      (switchButton.firstElementChild.firstElementChild as HTMLElement).style
+        .cssText
+    } direction="row" wrap="no-wrap">
+        <span class="${
+          switchButton.firstElementChild.firstElementChild.firstElementChild
+            .className
+        }">
+          <span>M🠗</span>
+        </span>
+      </span>
+    </span>
+    `;
+    button.append(buttonContent.content.cloneNode(true));
+
+    this.markdownSwitchButton = button;
+    this.insertAfter(button, switchButton);
   }
 
   /**
