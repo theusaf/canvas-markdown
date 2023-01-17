@@ -14,15 +14,16 @@ if (new URL(document.querySelector("#global_nav_help_link")?.href ??
         console.log("[Canvas Markdown] Importing dependencies...");
         await import("https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/codemirror.js");
         await import("https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/mode/markdown/markdown.js");
-        await import("https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js");
-        {
-            const css = document.createElement("link");
-            css.rel = "stylesheet";
-            css.href =
-                "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/codemirror.css";
-            document.head.append(css);
-        }
+        const s = document.createElement("script");
+        s.src = "https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js";
+        document.head.append(s);
+        const css = document.createElement("link");
+        css.rel = "stylesheet";
+        css.href =
+            "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/codemirror.css";
+        document.head.append(css);
         console.log("[Canvas Markdown] Setting up...");
+        setupWatcher();
         console.log("[Canvas Markdown] Done.");
     })();
 }
@@ -31,8 +32,19 @@ else {
 }
 function getEditorElements() {
     return [
-        ...document.querySelectorAll(".ic-RichContentEditor"),
+        ...document.querySelectorAll(".ic-RichContentEditor:not([md-id=canvas-container])"),
     ];
+}
+function setupWatcher() {
+    setInterval(() => {
+        const potentialEditorElements = getEditorElements();
+        if (potentialEditorElements.length) {
+            for (const editorElement of potentialEditorElements) {
+                const markdownEditor = new MarkdownEditor(editorElement);
+                markdownEditor.setup();
+            }
+        }
+    }, 1e3);
 }
 class MarkdownEditor {
     editorContainer;
@@ -43,7 +55,10 @@ class MarkdownEditor {
     constructor(editor) {
         this.editorContainer = editor;
         this.canvasTextArea = this.getTextArea();
+    }
+    setup() {
         this.editorContainer.setAttribute("md-id", "canvas-container");
+        this.injectMarkdownEditor();
     }
     getTextArea() {
         return this.editorContainer.querySelector("textarea[data-rich_text=true]");
@@ -65,13 +80,13 @@ class MarkdownEditor {
         // Note: The heights should follow the same values as the canvas editor.
         // These values can also be changed by the user.
         editorContent.innerHTML = `
-      <div md-id="markdown-editor-container">
+      <div md-id="markdown-editor-container" style="display: none;">
         <textarea md-id="markdown-editor" style="height: 400px; resize: none;"></textarea>
       </div>
     `;
         this.editorContainer
             .querySelector(".rce-wrapper")
-            .append(editorContent.content.cloneNode(true));
+            .prepend(editorContent.content.cloneNode(true));
         this.markdownContainer = this.editorContainer.querySelector("[md-id=markdown-editor-container]");
         this.markdownTextArea = this.editorContainer.querySelector("[md-id=markdown-editor]");
         this.markdownEditor = CodeMirror.fromTextArea(this.markdownTextArea, {

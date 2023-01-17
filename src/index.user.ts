@@ -23,16 +23,14 @@ if (
     await import(
       "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/mode/markdown/markdown.js" as any
     );
-    await import(
-      "https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js" as any
-    )
-    {
-      const css = document.createElement("link");
-      css.rel = "stylesheet";
-      css.href =
-        "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/codemirror.css";
-      document.head.append(css);
-    }
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js";
+    document.head.append(s);
+    const css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.href =
+      "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/codemirror.css";
+    document.head.append(css);
     console.log("[Canvas Markdown] Setting up...");
     setupWatcher();
     console.log("[Canvas Markdown] Done.");
@@ -43,7 +41,9 @@ if (
 
 function getEditorElements() {
   return [
-    ...document.querySelectorAll<HTMLDivElement>(".ic-RichContentEditor:not([md-id=canvas-container])"),
+    ...document.querySelectorAll<HTMLDivElement>(
+      ".ic-RichContentEditor:not([md-id=canvas-container])"
+    ),
   ];
 }
 
@@ -56,7 +56,7 @@ function setupWatcher() {
         markdownEditor.setup();
       }
     }
-  }, 5e3);
+  }, 1e3);
 }
 
 class MarkdownEditor {
@@ -107,13 +107,13 @@ class MarkdownEditor {
     // Note: The heights should follow the same values as the canvas editor.
     // These values can also be changed by the user.
     editorContent.innerHTML = `
-      <div md-id="markdown-editor-container">
+      <div md-id="markdown-editor-container" style="display: none;">
         <textarea md-id="markdown-editor" style="height: 400px; resize: none;"></textarea>
       </div>
     `;
     this.editorContainer
       .querySelector(".rce-wrapper")
-      .append(editorContent.content.cloneNode(true));
+      .prepend(editorContent.content.cloneNode(true));
     this.markdownContainer = this.editorContainer.querySelector(
       "[md-id=markdown-editor-container]"
     );
