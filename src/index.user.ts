@@ -62,7 +62,8 @@ function setupWatcher() {
 class MarkdownEditor {
   editorContainer: HTMLDivElement;
   canvasTextArea: HTMLTextAreaElement;
-  markdownContainer: HTMLDivElement;
+  markdownTextContainer: HTMLDivElement;
+  markdownPrettyContainer: HTMLDivElement;
   markdownTextArea: HTMLTextAreaElement;
   markdownEditor: CodeMirror.Editor;
 
@@ -102,30 +103,56 @@ class MarkdownEditor {
     return /pretty html/i.test(this.getSwitchTypeButton().title);
   }
 
+  insertAfter(newNode: Node, referenceNode: Node) {
+    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+  }
+
   injectMarkdownEditor() {
     const editorContent = document.createElement("template");
     // Note: The heights should follow the same values as the canvas editor.
     // These values can also be changed by the user.
     editorContent.innerHTML = `
-      <div md-id="markdown-editor-container" style="display: none;">
+      <div md-id="markdown-editor-text-container" style="display: none;">
         <textarea md-id="markdown-editor" style="height: 400px; resize: none;"></textarea>
+      </div>
+      <div md-id="markdown-editor-pretty-container">
+        <div class="RceHtmlEditor">
+          <div>
+            <label>
+              <span></span>
+              <div class="react-codemirror2" md-id="markdown-editor-codemirror-container">
+                <!-- Insert CodeMirror editor here -->
+              </div>
+            </label>
+          </div>
+        </div>
       </div>
     `;
     this.editorContainer
       .querySelector(".rce-wrapper")
       .prepend(editorContent.content.cloneNode(true));
-    this.markdownContainer = this.editorContainer.querySelector(
-      "[md-id=markdown-editor-container]"
+    this.markdownTextContainer = this.editorContainer.querySelector(
+      "[md-id=markdown-editor-text-container]"
     );
     this.markdownTextArea = this.editorContainer.querySelector(
       "[md-id=markdown-editor]"
     );
-    this.markdownEditor = CodeMirror.fromTextArea(this.markdownTextArea, {
-      mode: "markdown",
-      lineNumbers: true,
-    });
+    this.markdownPrettyContainer = this.editorContainer.querySelector(
+      "[md-id=markdown-editor-pretty-container]"
+    );
+    this.markdownEditor = CodeMirror(
+      this.markdownPrettyContainer.querySelector(
+        "[md-id=markdown-editor-codemirror-container]"
+      ),
+      {
+        mode: "markdown",
+        lineNumbers: true,
+      }
+    );
     const codeMirrorEditor = this.markdownEditor.getWrapperElement();
     codeMirrorEditor.style.height = "400px";
     codeMirrorEditor.setAttribute("md-id", "markdown-editor-codemirror");
+    // Hide the markdown editor. This also allows CodeMirror to properly render when the editor is shown.
+    this.markdownPrettyContainer.style.display = "none";
   }
 }
