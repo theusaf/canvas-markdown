@@ -243,9 +243,38 @@ CANVAS-MARKDOWN-CODE-->`;
   }
 
   async highlightCode(html: string): Promise<string> {
-    const extractedLanguages = this.extractLanguages(html);
-    for (const language of extractedLanguages) {
-      if (!highlight.getLanguage(language) && languages[language]) {
+    const template = document.createElement("template");
+    template.innerHTML = html;
+    const codeBlocks = [
+      ...template.content.querySelectorAll<HTMLElement>("pre code"),
+    ];
+    await this.extractLanguages(codeBlocks);
+    for (const codeBlock of codeBlocks) {
+      highlight.highlightElement(codeBlock);
+    }
+    return this.extractStyles(template);
+  }
+
+  extractStyles(template: HTMLTemplateElement): string {
+    const tempDiv = document.createElement("div");
+    tempDiv.style.display = "none";
+    tempDiv.append(template.content.cloneNode(true));
+    document.body.append(tempDiv);
+    const hljsElements = [
+      ...tempDiv.querySelectorAll<HTMLElement>("pre [class*=hljs]"),
+    ];
+    for (const element of hljsElements) {
+      element.style.color = getComputedStyle(element).color;
+    }
+    const output = tempDiv.innerHTML;
+    tempDiv.remove();
+    return output;
+  }
+
+  async extractLanguages(codeBlocks: HTMLElement[]): Promise<void> {
+    for (const block of codeBlocks) {
+      const language = block.className.match(/language-([^\s]*)/)?.[1];
+      if (language && !highlight.getLanguage(language) && languages[language]) {
         const languageData = (
           await import(
             `https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/highlight/es/languages/${languages[language]}.min.js`
@@ -254,13 +283,5 @@ CANVAS-MARKDOWN-CODE-->`;
         highlight.registerLanguage(language, languageData);
       }
     }
-    const htmlValue = highlight.highlightAuto(html).value;
-    return "";
-  }
-
-  extractLanguages(html: string): string[] {
-    return Array.from(html.matchAll(/<code class="language-(.*?)">/g)).map(
-      (match) => match[1]
-    );
   }
 }
