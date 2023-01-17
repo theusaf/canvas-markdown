@@ -66,6 +66,7 @@ class MarkdownEditor {
   markdownPrettyContainer: HTMLDivElement;
   markdownTextArea: HTMLTextAreaElement;
   markdownEditor: CodeMirror.Editor;
+  showdownConverter: showdown.Converter;
 
   constructor(editor: HTMLDivElement) {
     this.editorContainer = editor;
@@ -75,6 +76,14 @@ class MarkdownEditor {
   setup() {
     this.editorContainer.setAttribute("md-id", "canvas-container");
     this.injectMarkdownEditor();
+    this.setupShowdown();
+  }
+
+  setupShowdown() {
+    showdown.setFlavor("github");
+    this.showdownConverter = new showdown.Converter({
+      ghMentions: false,
+    });
   }
 
   getTextArea() {
@@ -154,5 +163,24 @@ class MarkdownEditor {
     codeMirrorEditor.setAttribute("md-id", "markdown-editor-codemirror");
     // Hide the markdown editor. This also allows CodeMirror to properly render when the editor is shown.
     this.markdownPrettyContainer.style.display = "none";
+  }
+
+  /**
+   * Extracts the markdown code from the html comment.
+   */
+  extractMarkdown(html: string): string {
+    return (
+      html.match(
+        /<!--CANVAS-MARKDOWN-CODE[^\n]*\n(.*)\nCANVAS-MARKDOWN-CODE-->$/s
+      )?.[1] ?? ""
+    );
+  }
+
+  generateOutput(markdown: string): string {
+    const html = this.showdownConverter.makeHtml(markdown);
+    return `${html}
+<!--CANVAS-MARKDOWN-CODE v1.0.0
+${markdown}
+CANVAS-MARKDOWN-CODE-->`;
   }
 }
