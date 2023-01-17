@@ -8,6 +8,8 @@
 // @grant        none
 // ==/UserScript==
 
+let highlight: typeof hljs, languages: Record<string, string>;
+
 try {
   if (
     new URL(
@@ -24,15 +26,30 @@ try {
       await import(
         "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/mode/markdown/markdown.js" as any
       );
+      highlight = (
+        await import(
+          "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/highlight/es/core.min.js" as any
+        )
+      ).default;
+      languages = (
+        await import(
+          "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/highlight/languages.js" as any
+        )
+      ).default;
       const s = document.createElement("script");
       s.src =
         "https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js";
       document.head.append(s);
-      const css = document.createElement("link");
-      css.rel = "stylesheet";
-      css.href =
+      const codemirrorCSS = document.createElement("link");
+      codemirrorCSS.rel = "stylesheet";
+      codemirrorCSS.href =
         "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/codemirror.css";
-      document.head.append(css);
+      const highlightCSS = document.createElement("link");
+      highlightCSS.rel = "stylesheet";
+      highlightCSS.href =
+        "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/highlight/styles/github-dark.min.css";
+      document.head.append(highlightCSS);
+      document.head.append(codemirrorCSS);
       console.log("[Canvas Markdown] Setting up...");
       setupWatcher();
       console.log("[Canvas Markdown] Done.");
@@ -82,6 +99,7 @@ class MarkdownEditor {
     this.injectMarkdownEditor();
     this.setupShowdown();
     this.injectMarkdownUI();
+    this.applyEventListeners();
   }
 
   setupShowdown() {
@@ -169,7 +187,6 @@ class MarkdownEditor {
     // Hide the markdown editor. By doing it here, it also allows CodeMirror to
     // properly render when the editor is shown.
     this.markdownPrettyContainer.style.display = "none";
-    this.applyEventListeners();
   }
 
   applyEventListeners() {}
@@ -216,11 +233,34 @@ class MarkdownEditor {
     );
   }
 
-  generateOutput(markdown: string): string {
-    const html = this.showdownConverter.makeHtml(markdown);
-    return `${html}
+  async generateOutput(markdown: string): Promise<string> {
+    const initialHTML = this.showdownConverter.makeHtml(markdown),
+      outputHTML = await this.highlightCode(initialHTML);
+    return `${outputHTML}
 <!--CANVAS-MARKDOWN-CODE v1.0.0
 ${markdown}
 CANVAS-MARKDOWN-CODE-->`;
+  }
+
+  async highlightCode(html: string): Promise<string> {
+    const extractedLanguages = this.extractLanguages(html);
+    for (const language of extractedLanguages) {
+      if (!highlight.getLanguage(language) && languages[language]) {
+        const languageData = (
+          await import(
+            `https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/highlight/es/languages/${languages[language]}.min.js`
+          )
+        ).default;
+        highlight.registerLanguage(language, languageData);
+      }
+    }
+    const htmlValue = highlight.highlightAuto(html).value;
+    return "";
+  }
+
+  extractLanguages(html: string): string[] {
+    return Array.from(html.matchAll(/<code class="language-(.*?)">/g)).map(
+      (match) => match[1]
+    );
   }
 }

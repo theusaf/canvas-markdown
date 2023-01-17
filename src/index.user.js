@@ -7,6 +7,7 @@
 // @match        https://*/*
 // @grant        none
 // ==/UserScript==
+let highlight, languages;
 try {
     if (new URL(document.querySelector("#global_nav_help_link")
         ?.href ?? "")?.hostname === "help.instructure.com") {
@@ -15,15 +16,22 @@ try {
             console.log("[Canvas Markdown] Importing dependencies...");
             await import("https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/codemirror.js");
             await import("https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/mode/markdown/markdown.js");
+            highlight = (await import("https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/highlight/es/core.min.js")).default;
+            languages = (await import("https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/highlight/languages.js")).default;
             const s = document.createElement("script");
             s.src =
                 "https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js";
             document.head.append(s);
-            const css = document.createElement("link");
-            css.rel = "stylesheet";
-            css.href =
+            const codemirrorCSS = document.createElement("link");
+            codemirrorCSS.rel = "stylesheet";
+            codemirrorCSS.href =
                 "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/codemirror.css";
-            document.head.append(css);
+            const highlightCSS = document.createElement("link");
+            highlightCSS.rel = "stylesheet";
+            highlightCSS.href =
+                "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/highlight/styles/github-dark.min.css";
+            document.head.append(highlightCSS);
+            document.head.append(codemirrorCSS);
             console.log("[Canvas Markdown] Setting up...");
             setupWatcher();
             console.log("[Canvas Markdown] Done.");
@@ -68,6 +76,7 @@ class MarkdownEditor {
         this.injectMarkdownEditor();
         this.setupShowdown();
         this.injectMarkdownUI();
+        this.applyEventListeners();
     }
     setupShowdown() {
         showdown.setFlavor("github");
@@ -130,7 +139,6 @@ class MarkdownEditor {
         // Hide the markdown editor. By doing it here, it also allows CodeMirror to
         // properly render when the editor is shown.
         this.markdownPrettyContainer.style.display = "none";
-        this.applyEventListeners();
     }
     applyEventListeners() { }
     injectMarkdownUI() {
@@ -160,11 +168,25 @@ class MarkdownEditor {
     extractMarkdown(html) {
         return (html.match(/<!--CANVAS-MARKDOWN-CODE[^\n]*\n(.*)\nCANVAS-MARKDOWN-CODE-->\s*$/s)?.[1] ?? "");
     }
-    generateOutput(markdown) {
-        const html = this.showdownConverter.makeHtml(markdown);
-        return `${html}
+    async generateOutput(markdown) {
+        const initialHTML = this.showdownConverter.makeHtml(markdown), outputHTML = await this.highlightCode(initialHTML);
+        return `${outputHTML}
 <!--CANVAS-MARKDOWN-CODE v1.0.0
 ${markdown}
 CANVAS-MARKDOWN-CODE-->`;
+    }
+    async highlightCode(html) {
+        const extractedLanguages = this.extractLanguages(html);
+        for (const language of extractedLanguages) {
+            if (!highlight.getLanguage(language) && languages[language]) {
+                const languageData = (await import(`https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/highlight/es/languages/${languages[language]}.min.js`)).default;
+                highlight.registerLanguage(language, languageData);
+            }
+        }
+        const htmlValue = highlight.highlightAuto(html).value;
+        return "";
+    }
+    extractLanguages(html) {
+        return Array.from(html.matchAll(/<code class="language-(.*?)">/g)).map((match) => match[1]);
     }
 }
