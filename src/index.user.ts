@@ -4,6 +4,10 @@
 // @version      1.0.0
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
+// @supportURL   https://github.com/theusaf/canvas-markdown/issues
+// @copyright    (c) 2023 theusaf
+// @homepage     https://github.com/theusaf/canvas-markdown
+// @license      MIT
 // @match        https://*/*
 // @grant        none
 // ==/UserScript==
