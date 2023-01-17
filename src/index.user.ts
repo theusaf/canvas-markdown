@@ -171,7 +171,7 @@ class MarkdownEditor {
   extractMarkdown(html: string): string {
     return (
       html.match(
-        /<!--CANVAS-MARKDOWN-CODE[^\n]*\n(.*)\nCANVAS-MARKDOWN-CODE-->$/s
+        /<!--CANVAS-MARKDOWN-CODE[^\n]*\n(.*)\nCANVAS-MARKDOWN-CODE-->\s*$/s
       )?.[1] ?? ""
     );
   }
