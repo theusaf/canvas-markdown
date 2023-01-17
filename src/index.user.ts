@@ -96,6 +96,7 @@ class MarkdownEditor {
   showdownConverter: showdown.Converter;
   active = false;
   mode = MarkdownEditorMode.PRETTY;
+  activating = false;
 
   constructor(editor: HTMLDivElement) {
     this.editorContainer = editor;
@@ -140,7 +141,7 @@ class MarkdownEditor {
   }
 
   isCanvasInPlainTextMode() {
-    return /pretty html/i.test(this.getCanvasSwitchTypeButton().title);
+    return /pretty html/i.test(this.getCanvasSwitchTypeButton().textContent);
   }
 
   insertAfter(newNode: Node, referenceNode: Node) {
@@ -205,9 +206,8 @@ class MarkdownEditor {
     });
     const switchButton = this.getCanvasSwitchEditorButton();
     switchButton.onclick = () => {
-      if (this.active) {
-        this.deactivate();
-      }
+      if (this.activating) return;
+      if (this.active) this.deactivate();
     };
     this.markdownSwitchButton.addEventListener("click", () => {
       if (this.active) {
@@ -221,6 +221,7 @@ class MarkdownEditor {
 
   activate() {
     this.active = true;
+    this.activating = true;
     this.markdownTextContainer.style.display = "none";
     this.markdownPrettyContainer.style.display = "block";
     const markdownCode = this.extractMarkdown(this.canvasTextArea.value);
@@ -229,25 +230,33 @@ class MarkdownEditor {
     if (!this.isCanvasInTextMode()) {
       this.getCanvasSwitchEditorButton().click();
     }
-    setTimeout(() => {
-      this.injectMarkdownSwitchTypeButton();
-      if (this.markdownSwitchTypeButton)
-        this.markdownSwitchTypeButton.style.display = "block";
-      this.getCanvasSwitchTypeButton().style.display = "none";
-      if (!this.isCanvasInPlainTextMode()) {
-        this.getCanvasSwitchTypeButton().click();
-      }
-    });
+    this.injectMarkdownSwitchTypeButton();
+    this.mode = MarkdownEditorMode.PRETTY;
+    if (this.markdownSwitchTypeButton) {
+      this.markdownSwitchTypeButton.style.display = "block";
+      this.markdownSwitchTypeButton.textContent =
+        "Switch to Raw Markdown editor";
+    }
+    this.getCanvasSwitchTypeButton().style.display = "none";
+    if (!this.isCanvasInPlainTextMode()) {
+      this.getCanvasSwitchTypeButton().click();
+    }
+    this.canvasTextArea.parentElement.style.display = "none";
+    this.markdownEditor.focus();
+    this.activating = false;
   }
 
   deactivate() {
     this.active = false;
     this.markdownTextContainer.style.display = "none";
     this.markdownPrettyContainer.style.display = "none";
-    if (this.markdownSwitchTypeButton)
+    if (this.markdownSwitchTypeButton) {
       this.markdownSwitchTypeButton.style.display = "none";
-    if (this.getCanvasSwitchTypeButton())
+    }
+    if (this.getCanvasSwitchTypeButton()) {
       this.getCanvasSwitchTypeButton().style.display = "block";
+    }
+    this.canvasTextArea.parentElement.style.display = "block";
   }
 
   async updateCanvasData() {
@@ -258,13 +267,12 @@ class MarkdownEditor {
   }
 
   activateCanvasCallbacks() {
-    const customEvent = new CustomEvent("input") as any;
+    const customEvent = new Event("input") as any;
     customEvent.keyCode = 13;
     customEvent.which = 13;
     customEvent.location = 0;
     customEvent.code = "Enter";
     customEvent.key = "Enter";
-    customEvent.target = this.canvasTextArea;
     this.canvasTextArea.dispatchEvent(customEvent);
   }
 
