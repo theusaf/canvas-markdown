@@ -87,6 +87,7 @@ class MarkdownEditor {
   markdownTextArea: HTMLTextAreaElement;
   markdownEditor: CodeMirror.Editor;
   markdownSwitchButton: HTMLButtonElement;
+  markdownSwitchTypeButton: HTMLButtonElement;
   showdownConverter: showdown.Converter;
   active = false;
 
@@ -252,12 +253,35 @@ class MarkdownEditor {
   }
 
   injectMarkdownUI() {
+    this.injectMarkdownSwitchButton();
+    this.injectMarkdownSwitchTypeButton();
+  }
+
+  injectMarkdownSwitchTypeButton() {
+    const button = document.createElement("button"),
+      switchButton = this.getCanvasSwitchTypeButton();
+    button.setAttribute("type", "button");
+    button.className = switchButton.className;
+    button.setAttribute("style", switchButton.style.cssText);
+    const buttonContent = document.createElement("template");
+    buttonContent.innerHTML = `
+    <span class="${switchButton.firstElementChild.className}">
+      <span class="${
+        switchButton.firstElementChild.firstElementChild.className
+      }" md-id="md-switch-type-button">Switch to raw Markdown editor</span>
+    </span>
+    `;
+    button.append(buttonContent.content.cloneNode(true));
+    this.markdownSwitchTypeButton = button;
+    this.insertAfter(button, switchButton);
+  }
+
+  injectMarkdownSwitchButton() {
     const button = document.createElement("button"),
       switchButton = this.getCanvasSwitchEditorButton();
     button.setAttribute("type", "button");
     button.className = switchButton.className;
     button.setAttribute("style", switchButton.style.cssText);
-
     const buttonContent = document.createElement("template");
     buttonContent.innerHTML = `
     <span class="${switchButton.firstElementChild.className}">
@@ -277,7 +301,6 @@ class MarkdownEditor {
     </span>
     `;
     button.append(buttonContent.content.cloneNode(true));
-
     this.markdownSwitchButton = button;
     this.insertAfter(button, switchButton);
   }
