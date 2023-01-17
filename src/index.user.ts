@@ -23,16 +23,18 @@ if (
     await import(
       "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/mode/markdown/markdown.js" as any
     );
-
+    await import(
+      "https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js" as any
+    )
     {
-      // TODO: Determine if this is actually needed.
       const css = document.createElement("link");
       css.rel = "stylesheet";
       css.href =
         "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/codemirror.css";
       document.head.append(css);
     }
-
+    console.log("[Canvas Markdown] Setting up...");
+    setupWatcher();
     console.log("[Canvas Markdown] Done.");
   })();
 } else {
@@ -41,8 +43,20 @@ if (
 
 function getEditorElements() {
   return [
-    ...document.querySelectorAll<HTMLDivElement>(".ic-RichContentEditor"),
+    ...document.querySelectorAll<HTMLDivElement>(".ic-RichContentEditor:not([md-id=canvas-container])"),
   ];
+}
+
+function setupWatcher() {
+  setInterval(() => {
+    const potentialEditorElements = getEditorElements();
+    if (potentialEditorElements.length) {
+      for (const editorElement of potentialEditorElements) {
+        const markdownEditor = new MarkdownEditor(editorElement);
+        markdownEditor.setup();
+      }
+    }
+  }, 5e3);
 }
 
 class MarkdownEditor {
@@ -55,8 +69,11 @@ class MarkdownEditor {
   constructor(editor: HTMLDivElement) {
     this.editorContainer = editor;
     this.canvasTextArea = this.getTextArea();
+  }
 
+  setup() {
     this.editorContainer.setAttribute("md-id", "canvas-container");
+    this.injectMarkdownEditor();
   }
 
   getTextArea() {
