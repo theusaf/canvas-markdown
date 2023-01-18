@@ -45,7 +45,9 @@ try {
         console.log("[Canvas Markdown] Not a Canvas page, skipping...");
     }
 }
-catch (e) { }
+catch (e) {
+    /* ignore */
+}
 function getEditorElements() {
     return [
         ...document.querySelectorAll(".ic-RichContentEditor:not([md-id=canvas-container])"),
@@ -337,7 +339,7 @@ class MarkdownEditor {
         for (const block of codeBlocks) {
             const language = block.className.match(/language-([^\s]*)/)?.[1];
             if (language && !highlight.getLanguage(language) && languages[language]) {
-                const languageData = (await import(`https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/highlight/es/languages/${languages[language]}.min.js`).catch(() => { })).default;
+                const languageData = (await import(`https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/highlight/es/languages/${languages[language]}.min.js`).catch(() => ({}))).default;
                 if (languageData) {
                     highlight.registerLanguage(language, languageData);
                 }

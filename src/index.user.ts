@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      1.2.0
+// @version      1.2.1
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -25,19 +25,19 @@ try {
     (async () => {
       console.log("[Canvas Markdown] Importing dependencies...");
       await import(
-        "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/codemirror/codemirror.js" as any
+        "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/codemirror/codemirror.js"
       );
       await import(
-        "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/codemirror/mode/markdown/markdown.js" as any
+        "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/codemirror/mode/markdown/markdown.js"
       );
       highlight = (
         await import(
-          "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/highlight/es/core.min.js" as any
+          "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/highlight/es/core.min.js"
         )
       ).default;
       languages = (
         await import(
-          "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/highlight/languages.js" as any
+          "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/highlight/languages.js"
         )
       ).default;
       const s = document.createElement("script");
@@ -61,7 +61,9 @@ try {
   } else {
     console.log("[Canvas Markdown] Not a Canvas page, skipping...");
   }
-} catch (e) {}
+} catch (e) {
+  /* ignore */
+}
 
 function getEditorElements() {
   return [
@@ -271,7 +273,7 @@ class MarkdownEditor {
   }
 
   activateCanvasCallbacks() {
-    const customEvent = new Event("input") as any;
+    const customEvent = new Event("input") as CanvasCallbackEvent;
     customEvent.keyCode = 13;
     customEvent.which = 13;
     customEvent.location = 0;
@@ -409,7 +411,7 @@ class MarkdownEditor {
         const languageData = (
           await import(
             `https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/highlight/es/languages/${languages[language]}.min.js`
-          ).catch(() => {})
+          ).catch(() => ({}))
         ).default;
         if (languageData) {
           highlight.registerLanguage(language, languageData);
