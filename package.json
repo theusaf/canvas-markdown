@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "test": "jest"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "prettier --write . && tsc"
   },
   "repository": {
     "type": "git",

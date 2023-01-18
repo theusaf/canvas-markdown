@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      1.1.1
+// @version      1.2.0
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -181,9 +181,6 @@ class MarkdownEditor {
         this.activating = true;
         this.markdownTextContainer.style.display = "none";
         this.markdownPrettyContainer.style.display = "block";
-        const markdownCode = this.extractMarkdown(this.canvasTextArea.value);
-        this.markdownTextArea.value = markdownCode;
-        this.markdownEditor.setValue(markdownCode);
         if (!this.isCanvasInTextMode()) {
             this.getCanvasSwitchEditorButton().click();
         }
@@ -198,6 +195,9 @@ class MarkdownEditor {
         if (!this.isCanvasInPlainTextMode()) {
             this.getCanvasSwitchTypeButton().click();
         }
+        const markdownCode = this.extractMarkdown(this.canvasTextArea.value);
+        this.markdownTextArea.value = markdownCode;
+        this.markdownEditor.setValue(markdownCode);
         this.canvasTextArea.parentElement.style.display = "none";
         this.markdownEditor.focus();
         this.activating = false;
