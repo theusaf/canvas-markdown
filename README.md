@@ -3,9 +3,11 @@
 This userscript allows you to write your Canvas assignments in Markdown.
 
 ## Installation
+
 To install this user script, you will need a userscript manager, such as [Tampermonkey](https://www.tampermonkey.net/).
-* You can install this script from [Greasy Fork](https://greasyfork.org/en/scripts/458457-canvas-markdown).
-* You can also install this directly from [GitHub](https://github.com/theusaf/canvas-markdown/raw/main/src/index.user.js).
+
+- You can install this script from [Greasy Fork](https://greasyfork.org/en/scripts/458457-canvas-markdown).
+- You can also install this directly from [GitHub](https://github.com/theusaf/canvas-markdown/raw/main/src/index.user.js).
 
 ## Things to Note
 

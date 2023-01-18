@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      1.0.0
+// @version      1.1.0
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -348,20 +348,24 @@ class MarkdownEditor {
    * Extracts the markdown code from the html comment.
    */
   extractMarkdown(html: string): string {
-    return (
-      html.match(
-        /<!--CANVAS-MARKDOWN-CODE[^\n]*\n(.*)\nCANVAS-MARKDOWN-CODE-->\s*$/s
-      )?.[1] ?? ""
-    );
+    const legacyMatch = html.match(
+      /<!--CANVAS-MARKDOWN-CODE[^\n]*\n(.*)\nCANVAS-MARKDOWN-CODE-->\s*$/s
+    )?.[1];
+    if (legacyMatch) return legacyMatch;
+    const match = html.match(
+      /<span class="canvas-markdown-code"[^\n]*?>\s*([\w=]*)\s*<\/span>/
+    )?.[1];
+    if (!match) return "";
+    return atob(match);
   }
 
   async generateOutput(markdown: string): Promise<string> {
     const initialHTML = this.showdownConverter.makeHtml(markdown),
       outputHTML = await this.highlightCode(initialHTML);
     return `${outputHTML}
-<!--CANVAS-MARKDOWN-CODE v1.0.0
-${markdown}
-CANVAS-MARKDOWN-CODE-->`;
+    <span class="canvas-markdown-code" style="display: none;">${btoa(
+      markdown
+    )}</span>`;
   }
 
   async highlightCode(html: string): Promise<string> {
