@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      1.1.0
+// @version      1.1.1
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -25,19 +25,19 @@ try {
     (async () => {
       console.log("[Canvas Markdown] Importing dependencies...");
       await import(
-        "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/codemirror.js" as any
+        "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/codemirror/codemirror.js" as any
       );
       await import(
-        "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/mode/markdown/markdown.js" as any
+        "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/codemirror/mode/markdown/markdown.js" as any
       );
       highlight = (
         await import(
-          "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/highlight/es/core.min.js" as any
+          "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/highlight/es/core.min.js" as any
         )
       ).default;
       languages = (
         await import(
-          "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/highlight/languages.js" as any
+          "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/highlight/languages.js" as any
         )
       ).default;
       const s = document.createElement("script");
@@ -47,11 +47,11 @@ try {
       const codemirrorCSS = document.createElement("link");
       codemirrorCSS.rel = "stylesheet";
       codemirrorCSS.href =
-        "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/codemirror.css";
+        "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/codemirror/codemirror.css";
       const highlightCSS = document.createElement("link");
       highlightCSS.rel = "stylesheet";
       highlightCSS.href =
-        "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/highlight/styles/github-dark.min.css";
+        "https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/highlight/styles/github-dark.min.css";
       document.head.append(highlightCSS);
       document.head.append(codemirrorCSS);
       console.log("[Canvas Markdown] Setting up...");
@@ -408,7 +408,7 @@ class MarkdownEditor {
       if (language && !highlight.getLanguage(language) && languages[language]) {
         const languageData = (
           await import(
-            `https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/highlight/es/languages/${languages[language]}.min.js`
+            `https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown@5216c569489b9aa2caa6aee49ef8aadabb1f1794/lib/highlight/es/languages/${languages[language]}.min.js`
           ).catch(() => {})
         ).default;
         if (languageData) {
