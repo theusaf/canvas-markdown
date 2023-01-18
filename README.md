@@ -15,8 +15,6 @@ This user script stores the Markdown source embedded in the HTML value for the a
 Changes made to the assignment in the Canvas UI will not be reflected in the Markdown source.
 Switching back to the Markdown editor will overwrite the HTML value with the Markdown source.
 
-As of the current version, it is possible to self-XSS yourself, so avoid using scripts in your Markdown.
-
 ## Dependencies
 
 This user script relies on third-party libraries to function. These libraries are imported during runtime from the following sources:

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      1.3.1
+// @version      1.3.2
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -347,20 +347,30 @@ class MarkdownEditor {
     extractStyles(template) {
         const tempDiv = document.createElement("div");
         tempDiv.style.display = "none";
-        tempDiv.append(template.content.cloneNode(true));
         document.body.append(tempDiv);
         const hljsElements = [
-            ...tempDiv.querySelectorAll("pre [class*=hljs]"),
+            ...template.content.querySelectorAll("pre [class*=hljs]"),
         ];
         for (const element of hljsElements) {
-            element.style.color = getComputedStyle(element).color;
+            let hasOnErrorAttribute = false, onErrorValue = null;
+            if (element.hasAttribute("onerror")) {
+                hasOnErrorAttribute = true;
+                onErrorValue = element.getAttribute("onerror");
+                element.removeAttribute("onerror");
+            }
+            const testElement = tempDiv.appendChild(element.cloneNode(false));
+            if (hasOnErrorAttribute) {
+                testElement.setAttribute("onerror", onErrorValue);
+            }
             if (element.tagName === "CODE") {
                 element.parentElement.style.backgroundColor =
-                    getComputedStyle(element).backgroundColor;
+                    getComputedStyle(testElement).backgroundColor;
                 element.style.textShadow = "none";
             }
+            element.style.color = getComputedStyle(testElement).color;
+            testElement.remove();
         }
-        const output = tempDiv.innerHTML;
+        const output = template.innerHTML;
         tempDiv.remove();
         return output;
     }
