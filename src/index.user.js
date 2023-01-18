@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      1.2.0
+// @version      1.3.0
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -72,6 +72,9 @@ var MarkdownEditorMode;
 class MarkdownEditor {
     editorContainer;
     canvasTextArea;
+    canvasResizeHandle;
+    canvasSwitchEditorButton;
+    canvasFullScreenButton;
     markdownTextContainer;
     markdownPrettyContainer;
     markdownTextArea;
@@ -85,6 +88,9 @@ class MarkdownEditor {
     constructor(editor) {
         this.editorContainer = editor;
         this.canvasTextArea = this.getCanvasTextArea();
+        this.canvasResizeHandle = this.getCanvasResizeHandle();
+        this.canvasSwitchEditorButton = this.getCanvasSwitchEditorButton();
+        this.canvasFullScreenButton = this.editorContainer.querySelector("[data-btn-id=rce-fullscreen-btn]");
     }
     setup() {
         this.editorContainer.setAttribute("md-id", "canvas-container");
@@ -99,6 +105,9 @@ class MarkdownEditor {
             ghMentions: false,
         });
     }
+    getCanvasResizeHandle() {
+        return this.editorContainer.querySelector("[data-btn-id=rce-resize-handle]");
+    }
     getCanvasTextArea() {
         return this.editorContainer.querySelector("textarea[data-rich_text=true]");
     }
@@ -106,7 +115,7 @@ class MarkdownEditor {
         return this.editorContainer.querySelector("[data-btn-id=rce-edit-btn]");
     }
     isCanvasInTextMode() {
-        return /rich text/i.test(this.getCanvasSwitchEditorButton().title);
+        return /rich text/i.test(this.canvasSwitchEditorButton.title);
     }
     getCanvasSwitchTypeButton() {
         return this.editorContainer.querySelector("[data-btn-id=rce-editormessage-btn]");
@@ -156,12 +165,12 @@ class MarkdownEditor {
         this.markdownPrettyContainer.style.display = "none";
     }
     applyEventListeners() {
-        this.markdownTextArea.addEventListener("input", this.updateCanvasData);
+        this.markdownTextArea.addEventListener("input", () => this.updateCanvasData());
         this.markdownEditor.on("change", () => {
             this.markdownTextArea.value = this.markdownEditor.getValue();
             this.updateCanvasData();
         });
-        const switchButton = this.getCanvasSwitchEditorButton();
+        const switchButton = this.canvasSwitchEditorButton;
         switchButton.onclick = () => {
             if (this.activating)
                 return;
@@ -177,6 +186,25 @@ class MarkdownEditor {
                 this.activate();
             }
         });
+        this.canvasFullScreenButton.onclick = () => {
+            setTimeout(() => {
+                this.applyCanvasResizeHandleEventListeners();
+                this.updateEditorHeight();
+            }, 500);
+        };
+        this.applyCanvasResizeHandleEventListeners();
+    }
+    applyCanvasResizeHandleEventListeners() {
+        if (!this.getCanvasResizeHandle())
+            return;
+        this.canvasResizeHandle = this.getCanvasResizeHandle();
+        this.canvasResizeHandle.onmousemove = () => this.updateEditorHeight();
+        this.canvasResizeHandle.onkeydown = () => this.updateEditorHeight();
+    }
+    updateEditorHeight() {
+        const height = this.canvasTextArea.style.height;
+        this.markdownTextArea.style.height = height;
+        this.markdownEditor.getWrapperElement().style.height = height;
     }
     activate() {
         this.active = true;
@@ -184,7 +212,7 @@ class MarkdownEditor {
         this.markdownTextContainer.style.display = "none";
         this.markdownPrettyContainer.style.display = "block";
         if (!this.isCanvasInTextMode()) {
-            this.getCanvasSwitchEditorButton().click();
+            this.canvasSwitchEditorButton.click();
         }
         this.injectMarkdownSwitchTypeButton();
         this.mode = MarkdownEditorMode.PRETTY;
@@ -231,7 +259,7 @@ class MarkdownEditor {
         this.canvasTextArea.dispatchEvent(customEvent);
     }
     injectMarkdownUI() {
-        const button = document.createElement("button"), switchButton = this.getCanvasSwitchEditorButton();
+        const button = document.createElement("button"), switchButton = this.canvasSwitchEditorButton;
         button.setAttribute("type", "button");
         button.className = switchButton.className;
         button.setAttribute("style", switchButton.style.cssText);
