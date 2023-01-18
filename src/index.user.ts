@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      1.3.0
+// @version      1.3.1
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -208,6 +208,7 @@ class MarkdownEditor {
       {
         mode: "markdown",
         lineNumbers: true,
+        lineWrapping: true,
       }
     );
     const codeMirrorEditor = this.markdownEditor.getWrapperElement();
