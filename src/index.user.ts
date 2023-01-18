@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      1.3.2
+// @version      1.3.3
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -421,7 +421,10 @@ class MarkdownEditor {
   }
 
   extractStyles(template: HTMLTemplateElement): string {
-    const tempDiv = document.createElement("div");
+    const tempDiv = document.createElement("pre"),
+      tempCode = document.createElement("code");
+    tempCode.className = "hljs";
+    tempDiv.append(tempCode);
     tempDiv.style.display = "none";
     document.body.append(tempDiv);
     const hljsElements = [
@@ -435,18 +438,39 @@ class MarkdownEditor {
         onErrorValue = element.getAttribute("onerror");
         element.removeAttribute("onerror");
       }
-      const testElement = tempDiv.appendChild(
+      const testElement = tempCode.appendChild(
         element.cloneNode(false)
       ) as HTMLElement;
       if (hasOnErrorAttribute) {
         testElement.setAttribute("onerror", onErrorValue);
       }
       if (element.tagName === "CODE") {
+        // Append the code element to the pre element.
+        tempDiv.append(testElement);
         element.parentElement.style.backgroundColor =
           getComputedStyle(testElement).backgroundColor;
         element.style.textShadow = "none";
+        element.style.display = "block";
+        element.style.overflowX = "auto";
+        element.style.padding = "1em";
       }
-      element.style.color = getComputedStyle(testElement).color;
+      const computedStyle = getComputedStyle(testElement),
+        specialClasses = {
+          "hljs-deletion": "background-color",
+          "hljs-addition": "background-color",
+          "hljs-emphasis": "font-style",
+          "hljs-strong": "font-weight",
+          "hljs-section": "font-weight",
+        };
+      element.style.color = computedStyle.color;
+      for (const [className, style] of Object.entries(specialClasses)) {
+        if (testElement.classList.contains(className)) {
+          element.style.setProperty(
+            style,
+            computedStyle.getPropertyValue(style)
+          );
+        }
+      }
       testElement.remove();
     }
     const output = template.innerHTML;
