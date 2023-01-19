@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      1.3.3
+// @version      1.3.4
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -166,10 +166,17 @@ class MarkdownEditor {
         this.markdownPrettyContainer.style.display = "none";
     }
     applyEventListeners() {
-        this.markdownTextArea.addEventListener("input", () => this.updateCanvasData());
+        let updateTimeout;
+        const updateData = () => {
+            clearTimeout(updateTimeout);
+            updateTimeout = setTimeout(() => {
+                this.updateCanvasData();
+            }, 500);
+        };
+        this.markdownTextArea.addEventListener("input", () => updateData());
         this.markdownEditor.on("change", () => {
             this.markdownTextArea.value = this.markdownEditor.getValue();
-            this.updateCanvasData();
+            updateData();
         });
         const switchButton = this.canvasSwitchEditorButton;
         switchButton.onclick = () => {
@@ -322,7 +329,7 @@ class MarkdownEditor {
         const legacyMatch = html.match(/<!--CANVAS-MARKDOWN-CODE[^\n]*\n(.*)\nCANVAS-MARKDOWN-CODE-->\s*$/s)?.[1];
         if (legacyMatch)
             return legacyMatch;
-        const match = html.match(/<span class="canvas-markdown-code"[^\n]*?>\s*([\w=]*)\s*<\/span>/)?.[1];
+        const match = html.match(/<span class="canvas-markdown-code"[^\n]*?>\s*([\w+./=]*)\s*<\/span>/)?.[1];
         if (!match)
             return "";
         return atob(match);
