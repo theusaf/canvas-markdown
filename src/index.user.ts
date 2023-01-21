@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      1.3.4
+// @version      1.3.5
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -109,20 +109,37 @@ class MarkdownEditor {
 
   constructor(editor: HTMLDivElement) {
     this.editorContainer = editor;
-    this.canvasTextArea = this.getCanvasTextArea();
-    this.canvasResizeHandle = this.getCanvasResizeHandle();
-    this.canvasSwitchEditorButton = this.getCanvasSwitchEditorButton();
-    this.canvasFullScreenButton = this.editorContainer.querySelector(
-      "[data-btn-id=rce-fullscreen-btn]"
-    );
   }
 
   setup() {
     this.editorContainer.setAttribute("md-id", "canvas-container");
-    this.injectMarkdownEditor();
-    this.setupShowdown();
-    this.injectMarkdownUI();
-    this.applyEventListeners();
+    if (this.isReady()) {
+      this.canvasTextArea = this.getCanvasTextArea();
+      this.canvasResizeHandle = this.getCanvasResizeHandle();
+      this.canvasSwitchEditorButton = this.getCanvasSwitchEditorButton();
+      this.canvasFullScreenButton = this.getCanvasFullScreenButton();
+      this.injectMarkdownEditor();
+      this.setupShowdown();
+      this.injectMarkdownUI();
+      this.applyEventListeners();
+    } else {
+      setTimeout(() => this.setup(), 1e3);
+    }
+  }
+
+  isReady() {
+    return !!(
+      this.getCanvasTextArea() &&
+      this.getCanvasResizeHandle() &&
+      this.getCanvasSwitchEditorButton() &&
+      this.getCanvasFullScreenButton()
+    );
+  }
+
+  getCanvasFullScreenButton() {
+    return this.editorContainer.querySelector<HTMLButtonElement>(
+      "[data-btn-id=rce-fullscreen-btn]"
+    );
   }
 
   setupShowdown() {
@@ -170,8 +187,6 @@ class MarkdownEditor {
 
   injectMarkdownEditor() {
     const editorContent = document.createElement("template");
-    // Note: The heights should follow the same values as the canvas editor.
-    // These values can also be changed by the user.
     editorContent.innerHTML = `
       <div md-id="markdown-editor-text-container" style="display: none;">
         <textarea md-id="markdown-editor" style="height: 400px; resize: none;"></textarea>
@@ -450,7 +465,6 @@ class MarkdownEditor {
         testElement.setAttribute("onerror", onErrorValue);
       }
       if (element.tagName === "CODE") {
-        // Append the code element to the pre element.
         tempDiv.append(testElement);
         element.parentElement.style.backgroundColor =
           getComputedStyle(testElement).backgroundColor;
