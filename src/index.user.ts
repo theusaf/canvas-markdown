@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      1.3.5
+// @version      2.0.0
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -88,6 +88,33 @@ function setupWatcher() {
 enum MarkdownEditorMode {
   RAW,
   PRETTY,
+}
+
+// https://developer.mozilla.org/en-US/docs/Web/API/btoa#unicode_strings
+function toBinary(str: string) {
+  const codeUnits = Uint16Array.from({ length: str.length }, (_, index) =>
+      str.charCodeAt(index)
+    ),
+    charCodes = new Uint8Array(codeUnits.buffer);
+
+  let result = "";
+  charCodes.forEach((char) => {
+    result += String.fromCharCode(char);
+  });
+  return result;
+}
+
+function fromBinary(binary: string) {
+  const bytes = Uint8Array.from({ length: binary.length }, (element, index) =>
+      binary.charCodeAt(index)
+    ),
+    charCodes = new Uint16Array(bytes.buffer);
+
+  let result = "";
+  charCodes.forEach((char) => {
+    result += String.fromCharCode(char);
+  });
+  return result;
 }
 
 class MarkdownEditor {
@@ -407,24 +434,26 @@ class MarkdownEditor {
    * Extracts the markdown code from the html comment.
    */
   extractMarkdown(html: string): string {
-    const legacyMatch = html.match(
-      /<!--CANVAS-MARKDOWN-CODE[^\n]*\n(.*)\nCANVAS-MARKDOWN-CODE-->\s*$/s
-    )?.[1];
-    if (legacyMatch) return legacyMatch;
     const match = html.match(
       /<span class="canvas-markdown-code"[^\n]*?>\s*([\w+./=]*)\s*<\/span>/
     )?.[1];
     if (!match) return "";
-    return atob(match);
+    const decoded = atob(match);
+    if (/\u0000/.test(decoded)) return fromBinary(decoded);
+    else return decoded;
   }
 
   async generateOutput(markdown: string): Promise<string> {
     const initialHTML = this.showdownConverter.makeHtml(markdown),
       outputHTML = await this.highlightCode(initialHTML);
+    let encoded;
+    try {
+      encoded = btoa(markdown);
+    } catch (e) {
+      encoded = btoa(toBinary(markdown));
+    }
     return `${outputHTML}
-    <span class="canvas-markdown-code" style="display: none;">${btoa(
-      markdown
-    )}</span>`;
+    <span class="canvas-markdown-code" style="display: none;">${encoded}</span>`;
   }
 
   async highlightCode(html: string): Promise<string> {
