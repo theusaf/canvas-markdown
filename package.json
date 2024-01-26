@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "prettier --write . && tsc"
+    "build": "prettier --cache --write . && tsc"
   },
   "repository": {
     "type": "git",

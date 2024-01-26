@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      2.1.0
+// @version      2.0.1
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -115,6 +115,7 @@ class MarkdownEditor {
             this.canvasFullScreenButton = this.getCanvasFullScreenButton();
             this.injectMarkdownEditor();
             this.setupShowdown();
+            this.injectMarkdownSettingsButton();
             this.injectMarkdownUI();
             this.applyEventListeners();
         }
@@ -195,6 +196,146 @@ class MarkdownEditor {
         // properly render when the editor is shown.
         this.markdownPrettyContainer.style.display = "none";
     }
+    displaySettings() {
+        const settingsUI = document.createElement("template");
+        settingsUI.innerHTML = `
+      <div md-id="settings-container">
+        <style>
+          [md-id=settings-container] {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgb(0, 0, 0, 0.5);
+            z-index: 999;
+            display: flex;
+          }
+          [md-id=settings-container] > div {
+            width: 90%;
+            height: 90%;
+            margin: auto;
+            overflow-y: auto;
+            background-color: white;
+            padding: 1rem;
+            position: relative;
+          }
+          [md-id=settings-container] h2 {
+            margin-top: 1rem;
+          }
+          [md-id=close-button] {
+            position: absolute;
+            top: 0;
+            right: 0.5rem;
+            padding: 0.5rem;
+            cursor: pointer;
+            width: 1rem;
+            height: 1rem;
+            color: black;
+            font-size: 1.5rem;
+            text-align: center;
+            margin: 0.5rem;
+            text-shadow: black 0 0 0.2rem;
+          }
+          [md-id=settings-form-container]
+          [md-id=settings-existing-container] {
+            display: flex;
+            flex-direction: column;
+            margin-top: 1rem;
+          }
+          [md-id=settings-form-label-container] {
+            display: flex;
+            flex-direction: row;
+            margin-bottom: 0.5rem;
+          }
+          [md-id=settings-form-label-container] > * {
+            font-weight: bold;
+            flex: 1;
+          }
+          [md-id=settings-form-input-container],
+          [md-id=settings-existing-input-container] {
+            display: flex;
+            flex-direction: row;
+          }
+          [md-id=settings-form-input-container] > *,
+          [md-id=settings-existing-existing-container] > * {
+            flex: 1;
+            padding: 0.5rem;
+          }
+          [md-id=settings-form-label-container] > :nth-child(2n + 1),
+          [md-id=settings-form-input-container] > :nth-child(2n + 1),
+          [md-id=settings-existing-existing-container] > :nth-child(2n + 1) {
+            background-color: #eee;
+          }
+        </style>
+        <div>
+          <button md-id="close-button">X</button>
+          <h2>Canvas Markdown Settings</h2>
+          <h3>Custom Styles</h3>
+          <p>
+            You can use these settings to customize the default styles of HTML elements in the output.
+            In the form below, input a tag or CSS selector to target in the first section. In the second section,
+            input the CSS properties you want to apply to the element as you would in a style attribute.
+          </p>
+          <div md-id="settings-form-container">
+            <!-- Insert form here -->
+            <div md-id="settings-form-label-container">
+              <label for="cm-settings-selector">Selector</label>
+              <label for="cm-settings-style">Style</label>
+              <span>Style Preview</span>
+            </div>
+            <div md-id="settings-form-input-container">
+              <span>
+                <input
+                  type="text" id="cm-settings-selector"
+                  md-id="settings-form-selector"
+                  placeholder="e.g. h1, .header, #header" />
+              </span>
+              <span>
+                <textarea
+                  id="cm-settings-style"
+                  md-id="settings-form-style"
+                  placeholder="e.g. color: red; font-weight: bold;">
+                </textarea>
+              </span>
+              <span style="justify-content: space-between; display: flex; height: 2rem">
+                <span md-id="settings-form-style-preview">Hello World</span>
+                <button md-id="settings-form-save-button">Save</button>
+              </span>
+            </div>
+          </div>
+          <div md-id="settings-existing-container" style="">
+            <!-- Insert existing settings here -->
+            <div md-id="settings-existing-label-container">
+              <span>Selector</span>
+              <span>Style</span>
+              <span>Style Preview</span>
+            </div>
+            <div>
+            </div>
+          </div>
+          <div md-id="settings-download-container">
+            <!-- Insert download/load settings here -->
+          </div>
+        </div>
+      </div>
+    `;
+        document.body.append(settingsUI.content.cloneNode(true));
+        const settingsContainer = document.querySelector("[md-id=settings-container]"), closeButton = document.querySelector("[md-id=close-button]"), selectorInput = document.querySelector("[md-id=settings-form-selector]"), styleInput = document.querySelector("[md-id=settings-form-style]"), stylePreview = document.querySelector("[md-id=settings-form-style-preview]");
+    }
+    loadSettings() {
+        const defaultSettings = {
+            customStyles: [],
+        };
+        const settings = JSON.parse(window.localStorage.getItem("canvas-markdown-settings") ?? "{}");
+        return {
+            ...defaultSettings,
+            ...settings,
+        };
+    }
+    saveSettings(settings) {
+        window.localStorage.setItem("canvas-markdown-settings", JSON.stringify(settings));
+    }
     applyEventListeners() {
         let updateTimeout;
         const updateData = () => {
@@ -223,6 +364,9 @@ class MarkdownEditor {
             else {
                 this.activate();
             }
+        });
+        this.markdownSettingsButton.addEventListener("click", () => {
+            this.displaySettings();
         });
         this.canvasFullScreenButton.onclick = () => {
             setTimeout(() => {
@@ -299,6 +443,7 @@ class MarkdownEditor {
     injectMarkdownUI() {
         const markdownSwitchButton = document.createElement("button"), switchButton = this.canvasSwitchEditorButton;
         markdownSwitchButton.setAttribute("type", "button");
+        markdownSwitchButton.setAttribute("title", "Switch to Markdown editor");
         markdownSwitchButton.className = switchButton.className;
         markdownSwitchButton.setAttribute("style", switchButton.style.cssText);
         const markdownSwitchButtonContent = document.createElement("template");
@@ -315,8 +460,12 @@ class MarkdownEditor {
     `;
         markdownSwitchButton.append(markdownSwitchButtonContent.content.cloneNode(true));
         this.markdownSwitchButton = markdownSwitchButton;
-        const settingsButton = document.createElement("button"), settingsButtonContent = document.createElement("template");
+        this.insertAfter(markdownSwitchButton, switchButton);
+    }
+    injectMarkdownSettingsButton() {
+        const settingsButton = document.createElement("button"), settingsButtonContent = document.createElement("template"), switchButton = this.canvasSwitchEditorButton;
         settingsButton.setAttribute("type", "button");
+        settingsButton.setAttribute("title", "Markdown settings");
         settingsButton.className = switchButton.className;
         settingsButton.setAttribute("style", switchButton.style.cssText);
         settingsButtonContent.innerHTML = `
@@ -333,7 +482,6 @@ class MarkdownEditor {
         settingsButton.append(settingsButtonContent.content.cloneNode(true));
         this.markdownSettingsButton = settingsButton;
         this.insertAfter(settingsButton, switchButton);
-        this.insertAfter(markdownSwitchButton, switchButton);
     }
     injectMarkdownSwitchTypeButton() {
         if (this.markdownSwitchTypeButton?.isConnected)
@@ -345,7 +493,9 @@ class MarkdownEditor {
         const buttonContent = document.createElement("template");
         buttonContent.innerHTML = `
     <span class="${switchButton.firstElementChild.className}">
-      <span class="${switchButton.firstElementChild.firstElementChild.className}" md-id="md-switch-type-button">Switch to raw Markdown editor</span>
+      <span class="${switchButton.firstElementChild.firstElementChild.className}" md-id="md-switch-type-button">
+        Switch to raw Markdown editor
+      </span>
     </span>
     `;
         button.append(buttonContent.content.cloneNode(true));

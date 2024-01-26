@@ -10,3 +10,12 @@ interface CanvasCallbackEvent extends Event {
   code: string;
   key: string;
 }
+
+interface CanvasMarkdownStyle {
+  target: string;
+  style: string;
+}
+
+interface CanvasMarkdownSettings {
+  customStyles: CanvasMarkdownStyle[];
+}
