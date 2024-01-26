@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      2.0.1
+// @version      2.1.0
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -96,6 +96,7 @@ class MarkdownEditor {
     markdownPrettyContainer;
     markdownTextArea;
     markdownEditor;
+    markdownSettingsButton;
     markdownSwitchButton;
     markdownSwitchTypeButton;
     showdownConverter;
@@ -296,12 +297,12 @@ class MarkdownEditor {
         this.canvasTextArea.dispatchEvent(customEvent);
     }
     injectMarkdownUI() {
-        const button = document.createElement("button"), switchButton = this.canvasSwitchEditorButton;
-        button.setAttribute("type", "button");
-        button.className = switchButton.className;
-        button.setAttribute("style", switchButton.style.cssText);
-        const buttonContent = document.createElement("template");
-        buttonContent.innerHTML = `
+        const markdownSwitchButton = document.createElement("button"), switchButton = this.canvasSwitchEditorButton;
+        markdownSwitchButton.setAttribute("type", "button");
+        markdownSwitchButton.className = switchButton.className;
+        markdownSwitchButton.setAttribute("style", switchButton.style.cssText);
+        const markdownSwitchButtonContent = document.createElement("template");
+        markdownSwitchButtonContent.innerHTML = `
     <span class="${switchButton.firstElementChild.className}">
       <span class="${switchButton.firstElementChild.firstElementChild.className}" style="${switchButton.firstElementChild.firstElementChild.style
             .cssText} direction="row" wrap="no-wrap">
@@ -312,9 +313,27 @@ class MarkdownEditor {
       </span>
     </span>
     `;
-        button.append(buttonContent.content.cloneNode(true));
-        this.markdownSwitchButton = button;
-        this.insertAfter(button, switchButton);
+        markdownSwitchButton.append(markdownSwitchButtonContent.content.cloneNode(true));
+        this.markdownSwitchButton = markdownSwitchButton;
+        const settingsButton = document.createElement("button"), settingsButtonContent = document.createElement("template");
+        settingsButton.setAttribute("type", "button");
+        settingsButton.className = switchButton.className;
+        settingsButton.setAttribute("style", switchButton.style.cssText);
+        settingsButtonContent.innerHTML = `
+    <span class="${switchButton.firstElementChild.className}">
+      <span class="${switchButton.firstElementChild.firstElementChild.className}" style="${switchButton.firstElementChild.firstElementChild.style
+            .cssText} direction="row" wrap="no-wrap">
+        <span class="${switchButton.firstElementChild.firstElementChild.firstElementChild
+            .className}">
+          <span>M⚙</span>
+        </span>
+      </span>
+    </span>
+    `;
+        settingsButton.append(settingsButtonContent.content.cloneNode(true));
+        this.markdownSettingsButton = settingsButton;
+        this.insertAfter(settingsButton, switchButton);
+        this.insertAfter(markdownSwitchButton, switchButton);
     }
     injectMarkdownSwitchTypeButton() {
         if (this.markdownSwitchTypeButton?.isConnected)
