@@ -130,6 +130,7 @@ class MarkdownEditor {
   markdownSettingsButton: HTMLButtonElement;
   markdownSwitchButton: HTMLButtonElement;
   markdownSwitchTypeButton: HTMLButtonElement;
+  markdownSettingsExistingContainer: HTMLDivElement;
   showdownConverter: showdown.Converter;
   active = false;
   mode = MarkdownEditorMode.PRETTY;
@@ -324,6 +325,9 @@ class MarkdownEditor {
           }
           [md-id=settings-existing-input-container] {
             margin-top: 1rem;
+          }
+          [md-id=settings-existing-container] {
+            margin-top: 1rem;
             border-top: 0.15rem solid #ccc;
           }
           [md-id=settings-form-input-container],
@@ -394,31 +398,11 @@ class MarkdownEditor {
               <span>Style Preview</span>
             </div>
             <div md-id="settings-form-input-container">
-              <span>
-                <input
-                  type="text" id="cm-settings-selector"
-                  md-id="settings-form-selector"
-                  placeholder="e.g. h1, .header, #header" />
-              </span>
-              <span>
-                <textarea
-                  id="cm-settings-style"
-                  md-id="settings-form-style"
-                  placeholder="e.g. color: red; font-weight: bold;"></textarea>
-              </span>
-              <span style="justify-content: space-between; display: flex;">
-                <span md-id="settings-form-style-preview">Hello World</span>
-                <div style="position: relative">
-                  <span md-id="settings-form-save-tooltip"></span>
-                  <button md-id="settings-form-save-button">Save</button>
-                </div>
-              </span>
+              <!-- Insert form inputs here -->
             </div>
           </div>
           <div md-id="settings-existing-container" style="">
             <!-- Insert existing settings here -->
-            <div md-id="settings-existing-input-container">
-            </div>
           </div>
           <h3>Import/Export Settings</h3>
           <div md-id="settings-download-container">
@@ -447,6 +431,179 @@ class MarkdownEditor {
     closeButton.addEventListener("click", () => {
       settingsContainer.remove();
     });
+
+    this.markdownSettingsExistingContainer = document.querySelector(
+      "[md-id=settings-existing-container]",
+    );
+
+    const settings = this.loadSettings();
+    for (const setting of settings.customStyles) {
+      const container = this.createExistingSettingsContainer();
+      this.markdownSettingsExistingContainer.append(container);
+      this.addSettingsForm(container, setting, true);
+    }
+    this.addSettingsForm(
+      document.querySelector("[md-id=settings-form-input-container]"),
+      null,
+      false,
+    );
+  }
+
+  addSettingsForm(
+    formContainer: HTMLDivElement,
+    setting: CanvasMarkdownStyle = null,
+    isExisting = true,
+  ) {
+    const formInputTemplate = document.createElement("template");
+    formInputTemplate.innerHTML = `
+      <span>
+        <input
+          type="text" id="cm-settings-selector"
+          md-id="settings-form-selector"
+          placeholder="e.g. h1, .header, #header" />
+      </span>
+      <span>
+        <textarea
+          id="cm-settings-style"
+          md-id="settings-form-style"
+          placeholder="e.g. color: red; font-weight: bold;"></textarea>
+      </span>
+      <span style="justify-content: space-between; display: flex;">
+        <span md-id="settings-form-style-preview">Hello World</span>
+        <div>
+          <span style="position: relative">
+            <span md-id="settings-form-save-tooltip"></span>
+            <button md-id="settings-form-save-button">Save</button>
+          </span>
+          <button md-id="settings-form-delete-button" style="margin-left: 0.5rem">Delete</button>
+        </div>
+      </span>
+    `;
+    formContainer.append(formInputTemplate.content.cloneNode(true));
+
+    const saveButton = formContainer.querySelector<HTMLButtonElement>(
+        "[md-id=settings-form-save-button]",
+      ),
+      deleteButton = formContainer.querySelector<HTMLButtonElement>(
+        "[md-id=settings-form-delete-button]",
+      ),
+      stylePreview = formContainer.querySelector<HTMLSpanElement>(
+        "[md-id=settings-form-style-preview]",
+      ),
+      saveTooltip = formContainer.querySelector<HTMLSpanElement>(
+        "[md-id=settings-form-save-tooltip]",
+      ),
+      selectorInput = formContainer.querySelector<HTMLInputElement>(
+        "[md-id=settings-form-selector]",
+      ),
+      styleInput = formContainer.querySelector<HTMLTextAreaElement>(
+        "[md-id=settings-form-style]",
+      );
+
+    if (!isExisting) {
+      deleteButton.style.display = "none";
+    }
+    if (setting) {
+      selectorInput.value = setting.target;
+      styleInput.value = setting.style;
+      stylePreview.style.cssText = setting.style;
+    }
+
+    // Add event listeners
+    deleteButton.addEventListener("click", () => {
+      formContainer.remove();
+      this.saveSettingsFromForm();
+    });
+    saveButton.addEventListener("click", () => {
+      const isValid = this.isSettingsValid({
+        target: selectorInput.value,
+        style: styleInput.value,
+      });
+      if (isValid !== true) {
+        saveTooltip.style.opacity = "1";
+        saveTooltip.textContent = isValid;
+        saveTooltip.style.backgroundColor = "red";
+        setTimeout(() => {
+          saveTooltip.style.opacity = "0";
+        }, 500);
+      } else {
+        if (!isExisting) {
+          const container = this.createExistingSettingsContainer();
+          this.markdownSettingsExistingContainer.append(container);
+          this.addSettingsForm(
+            container,
+            {
+              target: selectorInput.value,
+              style: styleInput.value,
+            },
+            true,
+          );
+          selectorInput.value = "";
+          styleInput.value = "";
+          stylePreview.style.cssText = "";
+        }
+        this.saveSettingsFromForm();
+        saveTooltip.style.opacity = "1";
+        saveTooltip.textContent = "Saved!";
+        saveTooltip.style.backgroundColor = "green";
+        setTimeout(() => {
+          saveTooltip.style.opacity = "0";
+        }, 500);
+      }
+    });
+    styleInput.addEventListener("input", () => {
+      stylePreview.style.cssText = styleInput.value;
+    });
+  }
+
+  createExistingSettingsContainer(): HTMLDivElement {
+    const existingSettingsContainer = document.createElement("div");
+    existingSettingsContainer.setAttribute(
+      "md-id",
+      "settings-existing-input-container",
+    );
+    return existingSettingsContainer;
+  }
+
+  isSettingsValid(settings: CanvasMarkdownStyle): string | true {
+    const { target, style } = settings;
+    if (!target.trim() || !style.trim()) return "Empty inputs";
+    try {
+      document.querySelector(target);
+    } catch (e) {
+      return "Invalid selector";
+    }
+    return true;
+  }
+
+  saveSettingsFromForm() {
+    const settings = this.getSettingsFromForm();
+    this.saveSettings({
+      customStyles: settings,
+    });
+  }
+
+  getSettingsFromForm(): CanvasMarkdownStyle[] {
+    const formContainers = [
+        ...this.markdownSettingsExistingContainer.querySelectorAll<HTMLDivElement>(
+          "[md-id=settings-existing-input-container]",
+        ),
+      ],
+      settings: CanvasMarkdownStyle[] = [];
+    for (const formContainer of formContainers) {
+      const selectorInput = formContainer.querySelector<HTMLInputElement>(
+          "[md-id=settings-form-selector]",
+        ),
+        styleInput = formContainer.querySelector<HTMLTextAreaElement>(
+          "[md-id=settings-form-style]",
+        ),
+        setting = {
+          target: selectorInput.value,
+          style: styleInput.value,
+        };
+      if (this.isSettingsValid(setting) === true) settings.push(setting);
+    }
+    return settings;
   }
 
   loadSettings(): CanvasMarkdownSettings {
@@ -463,9 +620,13 @@ class MarkdownEditor {
   }
 
   saveSettings(settings: CanvasMarkdownSettings) {
+    const existingSettings = this.loadSettings();
     window.localStorage.setItem(
       "canvas-markdown-settings",
-      JSON.stringify(settings),
+      JSON.stringify({
+        ...existingSettings,
+        ...settings,
+      }),
     );
   }
 
