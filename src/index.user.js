@@ -100,6 +100,7 @@ class MarkdownEditor {
     markdownSwitchButton;
     markdownSwitchTypeButton;
     markdownSettingsExistingContainer;
+    encodedOutput;
     showdownConverter;
     active = false;
     mode = MarkdownEditorMode.PRETTY;
@@ -390,7 +391,7 @@ class MarkdownEditor {
       </div>
     `;
         document.body.append(settingsUI.content.cloneNode(true));
-        const settingsContainer = document.querySelector("[md-id=settings-container]"), closeButton = document.querySelector("[md-id=close-button]"), downloadButton = document.querySelector("[md-id=settings-download-button]"), uploadButton = document.querySelector("[md-id=settings-upload-button]");
+        const settingsContainer = document.querySelector("[md-id=settings-container]"), closeButton = document.querySelector("[md-id=close-button]"), downloadButton = document.querySelector("[md-id=settings-download-button]"), uploadButton = document.querySelector("[md-id=settings-upload-button]"), removeBackupCheckbox = document.querySelector("#cm-settings-remove-backup");
         closeButton.addEventListener("click", () => {
             settingsContainer.remove();
         });
@@ -429,8 +430,14 @@ class MarkdownEditor {
                 reader.readAsText(file);
             };
         });
+        removeBackupCheckbox.addEventListener("change", () => {
+            this.saveSettings({
+                removeMarkdownBackup: removeBackupCheckbox.checked,
+            });
+        });
         this.markdownSettingsExistingContainer = document.querySelector("[md-id=settings-existing-container]");
         const settings = this.loadSettings();
+        removeBackupCheckbox.checked = settings.removeMarkdownBackup;
         for (const setting of settings.customStyles) {
             const container = this.createExistingSettingsContainer();
             this.markdownSettingsExistingContainer.append(container);
@@ -762,7 +769,10 @@ class MarkdownEditor {
      * Extracts the markdown code from the html comment.
      */
     extractMarkdown(html) {
-        const match = html.match(/<span class="canvas-markdown-code"[^\n]*?>\s*([\w+./=]*)\s*<\/span>/)?.[1];
+        let match = html.match(/<span class="canvas-markdown-code"[^\n]*?>\s*([\w+./=]*)\s*<\/span>/)?.[1];
+        if (this.encodedOutput) {
+            match = this.encodedOutput;
+        }
         if (!match)
             return "";
         const decoded = atob(match);
@@ -772,7 +782,7 @@ class MarkdownEditor {
             return decoded;
     }
     async generateOutput(markdown) {
-        const initialHTML = this.showdownConverter.makeHtml(markdown), outputHTML = await this.highlightCode(initialHTML);
+        const initialHTML = this.showdownConverter.makeHtml(markdown), outputHTML = await this.highlightCode(initialHTML), settings = this.loadSettings();
         let encoded;
         try {
             encoded = btoa(markdown);
@@ -780,8 +790,14 @@ class MarkdownEditor {
         catch (e) {
             encoded = btoa(toBinary(markdown));
         }
-        return `${outputHTML}
-    <span class="canvas-markdown-code" style="display: none;">${encoded}</span>`;
+        this.encodedOutput = encoded;
+        if (settings.removeMarkdownBackup) {
+            return outputHTML;
+        }
+        else {
+            return `${outputHTML}
+      <span class="canvas-markdown-code" style="display: none;">${encoded}</span>`;
+        }
     }
     async highlightCode(html) {
         const template = document.createElement("template");

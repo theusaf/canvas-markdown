@@ -131,6 +131,7 @@ class MarkdownEditor {
   markdownSwitchButton: HTMLButtonElement;
   markdownSwitchTypeButton: HTMLButtonElement;
   markdownSettingsExistingContainer: HTMLDivElement;
+  encodedOutput: string;
   showdownConverter: showdown.Converter;
   active = false;
   mode = MarkdownEditorMode.PRETTY;
@@ -464,7 +465,10 @@ class MarkdownEditor {
       downloadButton = document.querySelector(
         "[md-id=settings-download-button]",
       ),
-      uploadButton = document.querySelector("[md-id=settings-upload-button]");
+      uploadButton = document.querySelector("[md-id=settings-upload-button]"),
+      removeBackupCheckbox = document.querySelector<HTMLInputElement>(
+        "#cm-settings-remove-backup",
+      );
 
     closeButton.addEventListener("click", () => {
       settingsContainer.remove();
@@ -508,11 +512,18 @@ class MarkdownEditor {
       };
     });
 
+    removeBackupCheckbox.addEventListener("change", () => {
+      this.saveSettings({
+        removeMarkdownBackup: removeBackupCheckbox.checked,
+      });
+    });
+
     this.markdownSettingsExistingContainer = document.querySelector(
       "[md-id=settings-existing-container]",
     );
 
     const settings = this.loadSettings();
+    removeBackupCheckbox.checked = settings.removeMarkdownBackup;
     for (const setting of settings.customStyles) {
       const container = this.createExistingSettingsContainer();
       this.markdownSettingsExistingContainer.append(container);
@@ -921,9 +932,12 @@ class MarkdownEditor {
    * Extracts the markdown code from the html comment.
    */
   extractMarkdown(html: string): string {
-    const match = html.match(
+    let match = html.match(
       /<span class="canvas-markdown-code"[^\n]*?>\s*([\w+./=]*)\s*<\/span>/,
     )?.[1];
+    if (this.encodedOutput) {
+      match = this.encodedOutput;
+    }
     if (!match) return "";
     const decoded = atob(match);
     if (/\u0000/.test(decoded)) return fromBinary(decoded);
@@ -932,15 +946,21 @@ class MarkdownEditor {
 
   async generateOutput(markdown: string): Promise<string> {
     const initialHTML = this.showdownConverter.makeHtml(markdown),
-      outputHTML = await this.highlightCode(initialHTML);
+      outputHTML = await this.highlightCode(initialHTML),
+      settings = this.loadSettings();
     let encoded;
     try {
       encoded = btoa(markdown);
     } catch (e) {
       encoded = btoa(toBinary(markdown));
     }
-    return `${outputHTML}
-    <span class="canvas-markdown-code" style="display: none;">${encoded}</span>`;
+    this.encodedOutput = encoded;
+    if (settings.removeMarkdownBackup) {
+      return outputHTML;
+    } else {
+      return `${outputHTML}
+      <span class="canvas-markdown-code" style="display: none;">${encoded}</span>`;
+    }
   }
 
   async highlightCode(html: string): Promise<string> {
