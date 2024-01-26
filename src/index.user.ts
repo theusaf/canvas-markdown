@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      2.1.0
+// @version      2.1.1
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -294,8 +294,8 @@ class MarkdownEditor {
           }
           [md-id=close-button] {
             position: fixed;
-            top: 1rem;
-            right: 2.5rem;
+            top: 2%;
+            right: 4%;
             padding: 0.5rem;
             cursor: pointer;
             width: 1rem;
