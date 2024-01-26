@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      2.1.2
+// @version      2.2.0
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -364,6 +364,11 @@ class MarkdownEditor {
               This is to allow you to edit the markdown code later. If you do not want this backup, you can disable it here. This may be done
               to reduce the size of the HTML output and stay within
               <a href="https://community.canvaslms.com/t5/Canvas-Resource-Documents/Canvas-Character-Limits/ta-p/529365">character limits</a>.
+            </p>
+            <p>
+              When this option is enabled, the original markdown source will be lost after submission or page refresh. Attempting to edit
+              the markdown code later will result in a blank editor.
+            </p>
             </p>
             <label for="cm-settings-remove-backup" md-id="settings-remove-backup-label">
               <input type="checkbox" id="cm-settings-remove-backup" />
