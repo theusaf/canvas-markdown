@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      2.0.0
+// @version      2.0.1
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -166,7 +166,7 @@ class MarkdownEditor {
       <div md-id="markdown-editor-pretty-container">
         <div class="RceHtmlEditor">
           <div>
-            <label>
+            <label style="display: block">
               <span></span>
               <div class="react-codemirror2" md-id="markdown-editor-codemirror-container">
                 <!-- Insert CodeMirror editor here -->

@@ -18,7 +18,7 @@ try {
   if (
     new URL(
       document.querySelector<HTMLAnchorElement>("#global_nav_help_link")
-        ?.href ?? ""
+        ?.href ?? "",
     )?.hostname === "help.instructure.com"
   ) {
     console.log("[Canvas Markdown] Detected Canvas page, loading...");
@@ -68,7 +68,7 @@ try {
 function getEditorElements() {
   return [
     ...document.querySelectorAll<HTMLDivElement>(
-      ".ic-RichContentEditor:not([md-id=canvas-container])"
+      ".ic-RichContentEditor:not([md-id=canvas-container])",
     ),
   ];
 }
@@ -93,7 +93,7 @@ enum MarkdownEditorMode {
 // https://developer.mozilla.org/en-US/docs/Web/API/btoa#unicode_strings
 function toBinary(str: string) {
   const codeUnits = Uint16Array.from({ length: str.length }, (_, index) =>
-      str.charCodeAt(index)
+      str.charCodeAt(index),
     ),
     charCodes = new Uint8Array(codeUnits.buffer);
 
@@ -106,7 +106,7 @@ function toBinary(str: string) {
 
 function fromBinary(binary: string) {
   const bytes = Uint8Array.from({ length: binary.length }, (element, index) =>
-      binary.charCodeAt(index)
+      binary.charCodeAt(index),
     ),
     charCodes = new Uint16Array(bytes.buffer);
 
@@ -165,7 +165,7 @@ class MarkdownEditor {
 
   getCanvasFullScreenButton() {
     return this.editorContainer.querySelector<HTMLButtonElement>(
-      "[data-btn-id=rce-fullscreen-btn]"
+      "[data-btn-id=rce-fullscreen-btn]",
     );
   }
 
@@ -178,19 +178,19 @@ class MarkdownEditor {
 
   getCanvasResizeHandle() {
     return this.editorContainer.querySelector<HTMLSpanElement>(
-      "[data-btn-id=rce-resize-handle]"
+      "[data-btn-id=rce-resize-handle]",
     );
   }
 
   getCanvasTextArea() {
     return this.editorContainer.querySelector<HTMLTextAreaElement>(
-      "textarea[data-rich_text=true]"
+      "textarea[data-rich_text=true]",
     );
   }
 
   getCanvasSwitchEditorButton() {
     return this.editorContainer.querySelector<HTMLButtonElement>(
-      "[data-btn-id=rce-edit-btn]"
+      "[data-btn-id=rce-edit-btn]",
     );
   }
 
@@ -200,7 +200,7 @@ class MarkdownEditor {
 
   getCanvasSwitchTypeButton() {
     return this.editorContainer.querySelector<HTMLButtonElement>(
-      "[data-btn-id=rce-editormessage-btn]"
+      "[data-btn-id=rce-editormessage-btn]",
     );
   }
 
@@ -221,7 +221,7 @@ class MarkdownEditor {
       <div md-id="markdown-editor-pretty-container">
         <div class="RceHtmlEditor">
           <div>
-            <label>
+            <label style="display: block">
               <span></span>
               <div class="react-codemirror2" md-id="markdown-editor-codemirror-container">
                 <!-- Insert CodeMirror editor here -->
@@ -235,23 +235,23 @@ class MarkdownEditor {
       .querySelector(".rce-wrapper")
       .prepend(editorContent.content.cloneNode(true));
     this.markdownTextContainer = this.editorContainer.querySelector(
-      "[md-id=markdown-editor-text-container]"
+      "[md-id=markdown-editor-text-container]",
     );
     this.markdownTextArea = this.editorContainer.querySelector(
-      "[md-id=markdown-editor]"
+      "[md-id=markdown-editor]",
     );
     this.markdownPrettyContainer = this.editorContainer.querySelector(
-      "[md-id=markdown-editor-pretty-container]"
+      "[md-id=markdown-editor-pretty-container]",
     );
     this.markdownEditor = CodeMirror(
       this.markdownPrettyContainer.querySelector(
-        "[md-id=markdown-editor-codemirror-container]"
+        "[md-id=markdown-editor-codemirror-container]",
       ),
       {
         mode: "markdown",
         lineNumbers: true,
         lineWrapping: true,
-      }
+      },
     );
     const codeMirrorEditor = this.markdownEditor.getWrapperElement();
     codeMirrorEditor.style.height = "400px";
@@ -378,9 +378,9 @@ class MarkdownEditor {
       <span class="${
         switchButton.firstElementChild.firstElementChild.className
       }" style="${
-      (switchButton.firstElementChild.firstElementChild as HTMLElement).style
-        .cssText
-    } direction="row" wrap="no-wrap">
+        (switchButton.firstElementChild.firstElementChild as HTMLElement).style
+          .cssText
+      } direction="row" wrap="no-wrap">
         <span class="${
           switchButton.firstElementChild.firstElementChild.firstElementChild
             .className
@@ -435,7 +435,7 @@ class MarkdownEditor {
    */
   extractMarkdown(html: string): string {
     const match = html.match(
-      /<span class="canvas-markdown-code"[^\n]*?>\s*([\w+./=]*)\s*<\/span>/
+      /<span class="canvas-markdown-code"[^\n]*?>\s*([\w+./=]*)\s*<\/span>/,
     )?.[1];
     if (!match) return "";
     const decoded = atob(match);
@@ -488,7 +488,7 @@ class MarkdownEditor {
         element.removeAttribute("onerror");
       }
       const testElement = tempCode.appendChild(
-        element.cloneNode(false)
+        element.cloneNode(false),
       ) as HTMLElement;
       if (hasOnErrorAttribute) {
         testElement.setAttribute("onerror", onErrorValue);
@@ -515,7 +515,7 @@ class MarkdownEditor {
         if (testElement.classList.contains(className)) {
           element.style.setProperty(
             style,
-            computedStyle.getPropertyValue(style)
+            computedStyle.getPropertyValue(style),
           );
         }
       }
