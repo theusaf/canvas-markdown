@@ -18,4 +18,5 @@ interface CanvasMarkdownStyle {
 
 interface CanvasMarkdownSettings {
   customStyles: CanvasMarkdownStyle[];
+  removeMarkdownBackup: boolean;
 }

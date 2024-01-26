@@ -313,6 +313,25 @@ class MarkdownEditor {
             opacity: 0;
             transition: opacity 0.2s ease-in-out;
           }
+          [md-id="settings-remove-backup-label"] {
+            display: flex;
+            align-items: center;
+          }
+          [md-id="settings-remove-backup-label"] input {
+            display: none;
+          }
+          [md-id="settings-remove-backup-label"] span {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 0.25rem;
+            border: 0.15rem solid #ccc;
+            margin-right: 0.5rem;
+            cursor: pointer;
+          }
+          [md-id="settings-remove-backup-label"] input:checked + span {
+            background-color: blue;
+          }
         </style>
         <div>
           <span md-id="close-button">X</span>
@@ -336,6 +355,20 @@ class MarkdownEditor {
           </div>
           <div md-id="settings-existing-container" style="">
             <!-- Insert existing settings here -->
+          </div>
+          <h3>Remove Markdown Backup</h3>
+          <div>
+            <p>
+              By default, Canvas Markdown will save a backup of the raw markdown code in an invisible element at the end of the HTML output.
+              This is to allow you to edit the markdown code later. If you do not want this backup, you can disable it here. This may be done
+              to reduce the size of the HTML output and stay within
+              <a href="https://community.canvaslms.com/t5/Canvas-Resource-Documents/Canvas-Character-Limits/ta-p/529365">character limits</a>.
+            </p>
+            <label for="cm-settings-remove-backup" md-id="settings-remove-backup-label">
+              <input type="checkbox" id="cm-settings-remove-backup" />
+              <span></span>
+              Remove Markdown Backup
+            </label>
           </div>
           <h3>Import/Export Settings</h3>
           <div md-id="settings-download-container">
@@ -526,6 +559,7 @@ class MarkdownEditor {
     loadSettings() {
         const defaultSettings = {
             customStyles: [],
+            removeMarkdownBackup: false,
         };
         const settings = JSON.parse(window.localStorage.getItem("canvas-markdown-settings") ?? "{}");
         return {
