@@ -427,9 +427,52 @@ class MarkdownEditor {
     const settingsContainer = document.querySelector(
         "[md-id=settings-container]",
       ),
-      closeButton = document.querySelector("[md-id=close-button]");
+      closeButton = document.querySelector("[md-id=close-button]"),
+      downloadButton = document.querySelector(
+        "[md-id=settings-download-button]",
+      ),
+      uploadButton = document.querySelector("[md-id=settings-upload-button]");
+
     closeButton.addEventListener("click", () => {
       settingsContainer.remove();
+    });
+
+    downloadButton.addEventListener("click", () => {
+      const settings = this.loadSettings();
+      const blob = new Blob([JSON.stringify(settings)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "canvas-markdown-settings.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    uploadButton.addEventListener("click", () => {
+      const input = document.querySelector<HTMLInputElement>(
+        "[md-id=settings-upload-input]",
+      );
+      input.onchange = () => {
+        const file = input.files[0];
+        if (file.type !== "application/json") {
+          alert("Invalid file type");
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const settings = JSON.parse(reader.result as string);
+            this.saveSettings(settings);
+            settingsContainer.remove();
+            this.displaySettings();
+          } catch (e) {
+            alert("Invalid file");
+          }
+        };
+        reader.readAsText(file);
+      };
     });
 
     this.markdownSettingsExistingContainer = document.querySelector(
