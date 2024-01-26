@@ -318,10 +318,12 @@ class MarkdownEditor {
           [md-id=settings-form-label-container] > * {
             font-weight: bold;
             flex: 1;
+            padding: 0.5rem;
+            font-size: 1.2rem;
           }
           [md-id=settings-existing-input-container] {
             margin-top: 1rem;
-            border-top: 1px solid #ccc;
+            border-top: 0.15rem solid #ccc;
           }
           [md-id=settings-form-input-container],
           [md-id=settings-existing-input-container] {
@@ -332,15 +334,30 @@ class MarkdownEditor {
           [md-id=settings-existing-input-container] > * {
             flex: 1;
             padding: 0.5rem;
+            display: flex;
+          }
+          [md-id=settings-form-input-container] > * > input,
+          [md-id=settings-form-input-container] > * > textarea,
+          [md-id=settings-existing-input-container] > * > input,
+          [md-id=settings-existing-input-container] > * > textarea {
+            flex: 1;
           }
           [md-id=settings-form-label-container] > :nth-child(2n + 1),
           [md-id=settings-form-input-container] > :nth-child(2n + 1),
           [md-id=settings-existing-input-container] > :nth-child(2n + 1) {
             background-color: #eee;
           }
+          [md-id="settings-download-button-container"] > * {
+            padding: 0.5rem;
+            background-color: #eee;
+            border: 0.15rem solid #ccc;
+            border-radius: 0.5rem;
+            margin: 0.5rem;
+            cursor: pointer;
+          }
         </style>
         <div>
-          <button md-id="close-button">X</button>
+          <span md-id="close-button">X</span>
           <h2>Canvas Markdown Settings</h2>
           <h3>Custom Styles</h3>
           <p>
@@ -366,8 +383,7 @@ class MarkdownEditor {
                 <textarea
                   id="cm-settings-style"
                   md-id="settings-form-style"
-                  placeholder="e.g. color: red; font-weight: bold;">
-                </textarea>
+                  placeholder="e.g. color: red; font-weight: bold;"></textarea>
               </span>
               <span style="justify-content: space-between; display: flex; height: 2rem">
                 <span md-id="settings-form-style-preview">Hello World</span>
@@ -380,8 +396,21 @@ class MarkdownEditor {
             <div md-id="settings-existing-input-container">
             </div>
           </div>
+          <h3>Import/Export Settings</h3>
           <div md-id="settings-download-container">
             <!-- Insert download/load settings here -->
+            <div md-id="settings-download-button-container">
+              <span md-id="settings-download-button">Download Settings</span>
+              <label for="cm-settings-upload-input" md-id="settings-upload-button">
+                Upload Settings
+              </label>
+              <input
+                type="file"
+                accept=".json"
+                id="cm-settings-upload-input"
+                md-id="settings-upload-input"
+                style="display: none;" />
+            </div>
           </div>
         </div>
       </div>
