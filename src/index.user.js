@@ -219,6 +219,7 @@ class MarkdownEditor {
             background-color: white;
             padding: 1rem;
             position: relative;
+            border-radius: 0.5rem;
           }
           [md-id=settings-container] h2 {
             margin-top: 1rem;
@@ -288,6 +289,26 @@ class MarkdownEditor {
             margin: 0.5rem;
             cursor: pointer;
           }
+          [md-id="settings-form-save-button"] {
+            height: 2rem;
+          }
+          [md-id="settings-form-save-tooltip"] {
+            position: absolute;
+            top: -4.25rem;
+            left: -25%;
+            width: 4rem;
+            height: 4rem;
+            pointer-events: none;
+            background-color: black;
+            text-align: center;
+            border-radius: 0.5rem;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+          }
         </style>
         <div>
           <span md-id="close-button">X</span>
@@ -318,9 +339,12 @@ class MarkdownEditor {
                   md-id="settings-form-style"
                   placeholder="e.g. color: red; font-weight: bold;"></textarea>
               </span>
-              <span style="justify-content: space-between; display: flex; height: 2rem">
+              <span style="justify-content: space-between; display: flex;">
                 <span md-id="settings-form-style-preview">Hello World</span>
-                <button md-id="settings-form-save-button">Save</button>
+                <div style="position: relative">
+                  <span md-id="settings-form-save-tooltip"></span>
+                  <button md-id="settings-form-save-button">Save</button>
+                </div>
               </span>
             </div>
           </div>
@@ -333,7 +357,7 @@ class MarkdownEditor {
           <div md-id="settings-download-container">
             <!-- Insert download/load settings here -->
             <div md-id="settings-download-button-container">
-              <span md-id="settings-download-button">Download Settings</span>
+              <label md-id="settings-download-button">Download Settings</label>
               <label for="cm-settings-upload-input" md-id="settings-upload-button">
                 Upload Settings
               </label>
@@ -349,7 +373,10 @@ class MarkdownEditor {
       </div>
     `;
         document.body.append(settingsUI.content.cloneNode(true));
-        const settingsContainer = document.querySelector("[md-id=settings-container]"), closeButton = document.querySelector("[md-id=close-button]"), selectorInput = document.querySelector("[md-id=settings-form-selector]"), styleInput = document.querySelector("[md-id=settings-form-style]"), stylePreview = document.querySelector("[md-id=settings-form-style-preview]");
+        const settingsContainer = document.querySelector("[md-id=settings-container]"), closeButton = document.querySelector("[md-id=close-button]");
+        closeButton.addEventListener("click", () => {
+            settingsContainer.remove();
+        });
     }
     loadSettings() {
         const defaultSettings = {
