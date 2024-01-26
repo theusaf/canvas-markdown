@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      2.0.1
+// @version      2.1.0
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -226,9 +226,9 @@ class MarkdownEditor {
             margin-top: 1rem;
           }
           [md-id=close-button] {
-            position: absolute;
-            top: 0;
-            right: 0.5rem;
+            position: fixed;
+            top: 1rem;
+            right: 2.5rem;
             padding: 0.5rem;
             cursor: pointer;
             width: 1rem;
@@ -721,6 +721,15 @@ class MarkdownEditor {
         await this.extractLanguages(codeBlocks);
         for (const codeBlock of codeBlocks) {
             highlight.highlightElement(codeBlock);
+        }
+        // Extract styles from custom settings
+        const settings = this.loadSettings();
+        for (const setting of settings.customStyles) {
+            const { target, style } = setting;
+            const targetElements = template.content.querySelectorAll(target);
+            for (const targetElement of targetElements) {
+                targetElement.style.cssText += style;
+            }
         }
         return this.extractStyles(template);
     }

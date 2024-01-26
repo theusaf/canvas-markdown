@@ -293,9 +293,9 @@ class MarkdownEditor {
             margin-top: 1rem;
           }
           [md-id=close-button] {
-            position: absolute;
-            top: 0;
-            right: 0.5rem;
+            position: fixed;
+            top: 1rem;
+            right: 2.5rem;
             padding: 0.5rem;
             cursor: pointer;
             width: 1rem;
@@ -873,6 +873,17 @@ class MarkdownEditor {
     await this.extractLanguages(codeBlocks);
     for (const codeBlock of codeBlocks) {
       highlight.highlightElement(codeBlock);
+    }
+
+    // Extract styles from custom settings
+    const settings = this.loadSettings();
+    for (const setting of settings.customStyles) {
+      const { target, style } = setting;
+      const targetElements =
+        template.content.querySelectorAll<HTMLElement>(target);
+      for (const targetElement of targetElements) {
+        targetElement.style.cssText += style;
+      }
     }
     return this.extractStyles(template);
   }
