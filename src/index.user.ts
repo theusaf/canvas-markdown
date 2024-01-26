@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      2.0.1
+// @version      2.1.0
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
-// @copyright    (c) 2023 theusaf
+// @copyright    (c) 2023-2024 theusaf
 // @homepage     https://github.com/theusaf/canvas-markdown
 // @license      MIT
 // @match        https://*/*
