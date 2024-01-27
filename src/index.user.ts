@@ -1073,6 +1073,7 @@ class MarkdownEditor {
       replacement.style.borderRadius = "25%";
       if (checked) {
         replacement.style.backgroundColor = "#0099ff";
+        replacement.className = "task-list-item-checked";
       }
       replacement.innerHTML = "&nbsp;";
       item.insertBefore(replacement, checkbox);
