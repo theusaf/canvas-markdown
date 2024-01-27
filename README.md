@@ -42,5 +42,6 @@ Switching back to the Markdown editor will overwrite the HTML value with the Mar
 This user script relies on third-party libraries to function. These libraries are imported during runtime from the following sources: (See the `/lib` directory for more information)
 
 - [showdown.js](https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js)
+- [showdown-katex](https://cdn.jsdelivr.net/npm/showdown-katex@0.8.0/dist/showdown-katex.min.js)
 - [codemirror](https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/codemirror/codemirror.js)
 - [highlight.js](https://cdn.jsdelivr.net/gh/theusaf/canvas-markdown/lib/highlight/es/highlight.js)
