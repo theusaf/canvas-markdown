@@ -176,7 +176,6 @@ class MarkdownEditor {
     setupShowdown() {
         showdown.setFlavor("github");
         this.showdownConverter = new showdown.Converter({
-            tasklists: false,
             ghMentions: false,
             parseImgDimensions: true,
             underline: true,
@@ -867,6 +866,23 @@ class MarkdownEditor {
         for (const element of katexHTMLElements) {
             element.remove();
         }
+        // handle tasklists
+        const taskListItems = template.content.querySelectorAll(".task-list-item");
+        for (const item of taskListItems) {
+            const checkbox = item.querySelector("input[type=checkbox]"), checked = checkbox.checked, replacement = document.createElement("span");
+            replacement.style.cssText = checkbox.style.cssText;
+            replacement.style.display = "inline-block";
+            replacement.style.width = "1rem";
+            replacement.style.height = "1rem";
+            replacement.style.border = "2px solid #ccc";
+            replacement.style.borderRadius = "25%";
+            if (checked) {
+                replacement.style.backgroundColor = "#0099ff";
+            }
+            replacement.innerHTML = "&nbsp;";
+            item.insertBefore(replacement, checkbox);
+            checkbox.remove();
+        }
         // Extract styles from custom settings
         const settings = this.loadSettings();
         for (const setting of settings.customStyles) {
@@ -879,7 +895,6 @@ class MarkdownEditor {
         return this.extractStyles(template);
     }
     extractStyles(template) {
-        // TODO: tasklists
         const tempDiv = document.createElement("pre"), tempCode = document.createElement("code");
         tempCode.className = "hljs";
         tempDiv.append(tempCode);
