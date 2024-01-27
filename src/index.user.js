@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      2.2.0
+// @version      2.3.0
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -98,17 +98,18 @@ function showdownFootnotes(options) {
         {
             type: "lang",
             filter: (text, converter) => {
-                const regex = /^\[\^([\w]+)\]:[^\S\r\n]*(.*(\n[^\S\r\n]{2,}.*)*)$/gm, footnotes = text.match(regex), footnotesOutput = [];
+                const regex = /^\[\^([\w]+)\]:[^\S\r\n]*(.*(\n[^\S\r\n]{2,}.*)*)$/gm, regex2 = new RegExp(`\n${regex.source.slice(1)}`, "gm"), footnotes = text.match(regex), footnotesOutput = [];
                 if (footnotes) {
                     for (const footnote of footnotes) {
                         const name = footnote.match(/^\[\^([\w]+)\]/)[1], footnoteContent = footnote.replace(/^\[\^([\w]+)\]:[^\S\r\n]*/, ""), content = converter.makeHtml(footnoteContent.replace(/[^\S\r\n]{2}/gm, ""));
                         footnotesOutput.push(`<li class="footnote" value="${name}" id="${prefix}-${name}">${content}</li>`);
                     }
                 }
-                text = text.replace(regex, "");
+                text = text.replace(regex2, "").trim();
                 if (footnotesOutput.length) {
-                    text += `<hr><ol class="footnotes">${footnotesOutput.join("\n")}</ol>`;
+                    text += `<hr id="showdown-footnote-seperator"><ol class="footnotes">${footnotesOutput.join("\n")}</ol>`;
                 }
+                console.log(text);
                 return text;
             },
         },
@@ -173,7 +174,12 @@ class MarkdownEditor {
             ghMentions: false,
             parseImgDimensions: true,
             underline: true,
-            extensions: [window.showdownKatex({}), showdownFootnotes()],
+            extensions: [
+                window.showdownKatex({
+                    displayMode: false,
+                }),
+                showdownFootnotes(),
+            ],
         });
     }
     getCanvasResizeHandle() {
@@ -849,6 +855,11 @@ class MarkdownEditor {
         await this.extractLanguages(codeBlocks);
         for (const codeBlock of codeBlocks) {
             highlight.highlightElement(codeBlock);
+        }
+        // Remove katex-html
+        const katexHTMLElements = template.content.querySelectorAll(".katex-html");
+        for (const element of katexHTMLElements) {
+            element.remove();
         }
         // Extract styles from custom settings
         const settings = this.loadSettings();

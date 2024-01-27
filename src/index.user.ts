@@ -132,6 +132,7 @@ function showdownFootnotes(options?: {
       type: "lang",
       filter: (text, converter) => {
         const regex = /^\[\^([\w]+)\]:[^\S\r\n]*(.*(\n[^\S\r\n]{2,}.*)*)$/gm,
+          regex2 = new RegExp(`\n${regex.source}`, "gm"),
           footnotes = text.match(regex),
           footnotesOutput: string[] = [];
         if (footnotes) {
@@ -149,9 +150,9 @@ function showdownFootnotes(options?: {
             );
           }
         }
-        text = text.replace(regex, "");
+        text = text.replace(regex2, "").trim();
         if (footnotesOutput.length) {
-          text += `<hr><ol class="footnotes">${footnotesOutput.join(
+          text += `<hr id="showdown-footnote-seperator"><ol class="footnotes">${footnotesOutput.join(
             "\n",
           )}</ol>`;
         }
@@ -233,7 +234,12 @@ class MarkdownEditor {
       ghMentions: false,
       parseImgDimensions: true,
       underline: true,
-      extensions: [window.showdownKatex({}), showdownFootnotes()],
+      extensions: [
+        window.showdownKatex({
+          displayMode: false,
+        }),
+        showdownFootnotes(),
+      ],
     });
   }
 
@@ -1034,6 +1040,13 @@ class MarkdownEditor {
     await this.extractLanguages(codeBlocks);
     for (const codeBlock of codeBlocks) {
       highlight.highlightElement(codeBlock);
+    }
+
+    // Remove katex-html
+    const katexHTMLElements =
+      template.content.querySelectorAll<HTMLElement>(".katex-html");
+    for (const element of katexHTMLElements) {
+      element.remove();
     }
 
     // Extract styles from custom settings
