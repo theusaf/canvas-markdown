@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      2.3.0
+// @version      2.4.0
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -878,6 +878,7 @@ class MarkdownEditor {
             replacement.style.borderRadius = "25%";
             if (checked) {
                 replacement.style.backgroundColor = "#0099ff";
+                replacement.className = "task-list-item-checked";
             }
             replacement.innerHTML = "&nbsp;";
             item.insertBefore(replacement, checkbox);
