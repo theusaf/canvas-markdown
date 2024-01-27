@@ -141,10 +141,17 @@ function showdownFootnotes(options?: {
               footnoteContent = footnote.replace(
                 /^\[\^([\w]+)\]:[^\S\r\n]*/,
                 "",
-              ),
-              content = converter.makeHtml(
-                footnoteContent.replace(/[^\S\r\n]{2}/gm, ""),
               );
+            let content = converter.makeHtml(
+              footnoteContent.replace(/[^\S\r\n]{2}/gm, ""),
+            );
+            if (
+              content.startsWith("<p>") &&
+              content.endsWith("</p>") &&
+              !footnoteContent.startsWith("<p>")
+            ) {
+              content = content.slice(3, -4);
+            }
             footnotesOutput.push(
               `<li class="footnote" value="${name}" id="${prefix}-${name}">${content}</li>`,
             );
@@ -231,6 +238,7 @@ class MarkdownEditor {
   setupShowdown() {
     showdown.setFlavor("github");
     this.showdownConverter = new showdown.Converter({
+      tasklists: false,
       ghMentions: false,
       parseImgDimensions: true,
       underline: true,

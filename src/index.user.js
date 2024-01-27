@@ -98,10 +98,16 @@ function showdownFootnotes(options) {
         {
             type: "lang",
             filter: (text, converter) => {
-                const regex = /^\[\^([\w]+)\]:[^\S\r\n]*(.*(\n[^\S\r\n]{2,}.*)*)$/gm, regex2 = new RegExp(`\n${regex.source.slice(1)}`, "gm"), footnotes = text.match(regex), footnotesOutput = [];
+                const regex = /^\[\^([\w]+)\]:[^\S\r\n]*(.*(\n[^\S\r\n]{2,}.*)*)$/gm, regex2 = new RegExp(`\n${regex.source}`, "gm"), footnotes = text.match(regex), footnotesOutput = [];
                 if (footnotes) {
                     for (const footnote of footnotes) {
-                        const name = footnote.match(/^\[\^([\w]+)\]/)[1], footnoteContent = footnote.replace(/^\[\^([\w]+)\]:[^\S\r\n]*/, ""), content = converter.makeHtml(footnoteContent.replace(/[^\S\r\n]{2}/gm, ""));
+                        const name = footnote.match(/^\[\^([\w]+)\]/)[1], footnoteContent = footnote.replace(/^\[\^([\w]+)\]:[^\S\r\n]*/, "");
+                        let content = converter.makeHtml(footnoteContent.replace(/[^\S\r\n]{2}/gm, ""));
+                        if (content.startsWith("<p>") &&
+                            content.endsWith("</p>") &&
+                            !footnoteContent.startsWith("<p>")) {
+                            content = content.slice(3, -4);
+                        }
                         footnotesOutput.push(`<li class="footnote" value="${name}" id="${prefix}-${name}">${content}</li>`);
                     }
                 }
@@ -109,7 +115,6 @@ function showdownFootnotes(options) {
                 if (footnotesOutput.length) {
                     text += `<hr id="showdown-footnote-seperator"><ol class="footnotes">${footnotesOutput.join("\n")}</ol>`;
                 }
-                console.log(text);
                 return text;
             },
         },
@@ -171,6 +176,7 @@ class MarkdownEditor {
     setupShowdown() {
         showdown.setFlavor("github");
         this.showdownConverter = new showdown.Converter({
+            tasklists: false,
             ghMentions: false,
             parseImgDimensions: true,
             underline: true,
