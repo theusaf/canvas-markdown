@@ -26,6 +26,10 @@ try {
             s.src =
                 "https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js";
             document.head.append(s);
+            const showdownKatex = document.createElement("script");
+            showdownKatex.src =
+                "https://cdn.jsdelivr.net/npm/showdown-katex@0.8.0/dist/showdown-katex.min.js";
+            document.head.append(showdownKatex);
             const codemirrorCSS = document.createElement("link");
             codemirrorCSS.rel = "stylesheet";
             codemirrorCSS.href =
@@ -86,6 +90,35 @@ function fromBinary(binary) {
     });
     return result;
 }
+// From https://github.com/halbgut/showdown-footnotes
+function showdownFootnotes(options) {
+    const { prefix } = options ?? { prefix: "footnote" };
+    return [
+        // Bottom footnotes
+        {
+            type: "lang",
+            filter: (text, converter) => {
+                const regex = /^\[\^([\w]+)\]:[^\S\r\n]*(.*(\n[^\S\r\n]{2,}.*)*)$/gm, footnotes = text.match(regex), footnotesOutput = [];
+                if (footnotes) {
+                    for (const footnote of footnotes) {
+                        const name = footnote.match(/^\[\^([\w]+)\]/)[1], footnoteContent = footnote.replace(/^\[\^([\w]+)\]:[^\S\r\n]*/, ""), content = converter.makeHtml(footnoteContent.replace(/[^\S\r\n]{2}/gm, ""));
+                        footnotesOutput.push(`<li class="footnote" value="${name}" id="${prefix}-${name}">${content}</li>`);
+                    }
+                }
+                text = text.replace(regex, "");
+                if (footnotesOutput.length) {
+                    text += `<hr><ol class="footnotes">${footnotesOutput.join("\n")}</ol>`;
+                }
+                return text;
+            },
+        },
+        // Inline footnotes
+        {
+            type: "lang",
+            filter: (text) => text.replace(/\[\^([\w]+)\]/gm, (str, name) => `<a href="#${prefix}-${name}"><sup>[${name}]</sup></a>`),
+        },
+    ];
+}
 class MarkdownEditor {
     editorContainer;
     canvasTextArea;
@@ -138,6 +171,9 @@ class MarkdownEditor {
         showdown.setFlavor("github");
         this.showdownConverter = new showdown.Converter({
             ghMentions: false,
+            parseImgDimensions: true,
+            underline: true,
+            extensions: [window.showdownKatex({}), showdownFootnotes()],
         });
     }
     getCanvasResizeHandle() {
@@ -826,6 +862,7 @@ class MarkdownEditor {
         return this.extractStyles(template);
     }
     extractStyles(template) {
+        // TODO: tasklists
         const tempDiv = document.createElement("pre"), tempCode = document.createElement("code");
         tempCode.className = "hljs";
         tempDiv.append(tempCode);

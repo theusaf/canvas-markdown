@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Canvas Markdown
 // @namespace    https://theusaf.org
-// @version      2.2.0
+// @version      2.3.0
 // @description  Adds a markdown editor to Canvas
 // @author       theusaf
 // @supportURL   https://github.com/theusaf/canvas-markdown/issues
@@ -44,6 +44,10 @@ try {
       s.src =
         "https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js";
       document.head.append(s);
+      const showdownKatex = document.createElement("script");
+      showdownKatex.src =
+        "https://cdn.jsdelivr.net/npm/showdown-katex@0.8.0/dist/showdown-katex.min.js";
+      document.head.append(showdownKatex);
       const codemirrorCSS = document.createElement("link");
       codemirrorCSS.rel = "stylesheet";
       codemirrorCSS.href =
@@ -117,6 +121,56 @@ function fromBinary(binary: string) {
   return result;
 }
 
+// From https://github.com/halbgut/showdown-footnotes
+function showdownFootnotes(options?: {
+  prefix?: string;
+}): showdown.ShowdownExtension[] {
+  const { prefix } = options ?? { prefix: "footnote" };
+  return [
+    // Bottom footnotes
+    {
+      type: "lang",
+      filter: (text, converter) => {
+        const regex = /^\[\^([\w]+)\]:[^\S\r\n]*(.*(\n[^\S\r\n]{2,}.*)*)$/gm,
+          footnotes = text.match(regex),
+          footnotesOutput: string[] = [];
+        if (footnotes) {
+          for (const footnote of footnotes) {
+            const name = footnote.match(/^\[\^([\w]+)\]/)[1],
+              footnoteContent = footnote.replace(
+                /^\[\^([\w]+)\]:[^\S\r\n]*/,
+                "",
+              ),
+              content = converter.makeHtml(
+                footnoteContent.replace(/[^\S\r\n]{2}/gm, ""),
+              );
+            footnotesOutput.push(
+              `<li class="footnote" value="${name}" id="${prefix}-${name}">${content}</li>`,
+            );
+          }
+        }
+        text = text.replace(regex, "");
+        if (footnotesOutput.length) {
+          text += `<hr><ol class="footnotes">${footnotesOutput.join(
+            "\n",
+          )}</ol>`;
+        }
+        return text;
+      },
+    },
+    // Inline footnotes
+    {
+      type: "lang",
+      filter: (text) =>
+        text.replace(
+          /\[\^([\w]+)\]/gm,
+          (str, name) =>
+            `<a href="#${prefix}-${name}"><sup>[${name}]</sup></a>`,
+        ),
+    },
+  ];
+}
+
 class MarkdownEditor {
   editorContainer: HTMLDivElement;
   canvasTextArea: HTMLTextAreaElement;
@@ -177,6 +231,9 @@ class MarkdownEditor {
     showdown.setFlavor("github");
     this.showdownConverter = new showdown.Converter({
       ghMentions: false,
+      parseImgDimensions: true,
+      underline: true,
+      extensions: [window.showdownKatex({}), showdownFootnotes()],
     });
   }
 
@@ -993,6 +1050,7 @@ class MarkdownEditor {
   }
 
   extractStyles(template: HTMLTemplateElement): string {
+    // TODO: tasklists
     const tempDiv = document.createElement("pre"),
       tempCode = document.createElement("code");
     tempCode.className = "hljs";
